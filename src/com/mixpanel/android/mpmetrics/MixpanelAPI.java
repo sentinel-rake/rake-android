@@ -20,7 +20,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import android.util.Log; 
 
 /**
  * Core class for interacting with Mixpanel Analytics.
@@ -93,6 +93,7 @@ public class MixpanelAPI {
      * Use MixpanelAPI.getInstance to get an instance.
      */
     MixpanelAPI(Context context, String token) {
+    
         mContext = context;
         mToken = token;
         mPeople = new PeopleImpl();
@@ -102,8 +103,11 @@ public class MixpanelAPI {
 
         mStoredPreferences = context.getSharedPreferences("com.mixpanel.android.mpmetrics.MixpanelAPI_" + token, Context.MODE_PRIVATE);
         readSuperProperties();
-        readIdentities();
+        readIdentities();    	
     }
+    
+
+    
 
     /**
      * Get the instance of MixpanelAPI associated with your Mixpanel project token.
@@ -147,6 +151,7 @@ public class MixpanelAPI {
             return instance;
         }
     }
+   
 
     /**
      * Sets the target frequency of messages to Mixpanel servers.
@@ -261,7 +266,58 @@ public class MixpanelAPI {
             Log.e(LOGTAG, "Exception tracking event " + eventName, e);
         }
     }
+    
+    // TODO : by lons
+    public void trackSimple(JSONObject properties) {
+        String eventName = "simple";
+        
+        try {
+            
+            JSONObject dataObj = new JSONObject();
+            dataObj.put("event", eventName);
+            dataObj.put("token", mToken);
+            dataObj.put("mp_lib", "android");
+            dataObj.put("lib_version", VERSION);
+            
+            JSONObject propertiesObj = new JSONObject();
+            
+            if (properties != null) {
+                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
+                    String key = (String) iter.next();
+                    propertiesObj.put(key, properties.get(key));
+                }
+            }
 
+            dataObj.put("properties", propertiesObj);
+
+            mMessages.eventsMessage(dataObj);
+        } catch (JSONException e) {
+            Log.e(LOGTAG, "Exception tracking event " + eventName, e);
+        }
+    }
+    
+    public void setBaseServer(Context context, String server) {
+    	//MPConfig.BASE_ENDPOINT = server;
+    	//
+    	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
+        msgs.setEndpointHost(server);
+        //Log.i(LOGTAG, "MPConfig.BASE_ENDPOINT : " + MPConfig.BASE_ENDPOINT);
+    }
+    public void setFallbackServer(Context context, String server) {
+    	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
+        msgs.setFallbackHost(server);
+    	//Log.i(LOGTAG, "MPConfig.FALLBACK_ENDPOINT : " + MPConfig.FALLBACK_ENDPOINT);
+    }
+    public static void setTrustedServer(Boolean trust) {
+    	MPConfig.TRUSTED_SERVER = trust;
+    	Log.d(LOGTAG, "MPConfig.TRUSTED_SERVER : " + MPConfig.TRUSTED_SERVER);
+    }
+    public static void setDebug(Boolean debug) {
+    	MPConfig.DEBUG = debug;
+    	Log.d(LOGTAG, "MPConfig.DEBUG : " + MPConfig.DEBUG);
+    }
+    ////// until here by lons
+    
     /**
      * Push all queued Mixpanel events and People Analytics changes to Mixpanel servers.
      *

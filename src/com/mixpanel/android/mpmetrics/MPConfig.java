@@ -18,10 +18,14 @@ package com.mixpanel.android.mpmetrics;
 
     // Base url that track requests will be sent to. Events will be sent to /track
     // and people requests will be sent to /engage
-    public static final String BASE_ENDPOINT = "https://api.mixpanel.com";
+    //public static final String BASE_ENDPOINT = "https://api.mixpanel.com";
+    //public static String BASE_ENDPOINT = "https://10.200.116.69:8443/log";
+    public static String BASE_ENDPOINT = "https://localhost";
 
     // Fallback url on failure
-    public static final String FALLBACK_ENDPOINT = "http://api.mixpanel.com";
+    //public static final String FALLBACK_ENDPOINT = "http://api.mixpanel.com";
+    //public static String FALLBACK_ENDPOINT = "http://10.200.116.69/log";
+    public static String FALLBACK_ENDPOINT = "http://localhost";
 
     // Time in milliseconds that the AnalyticsMessages thread must be idle for before it dies.
     // Must be reconfigured before the library is initialized for the first time.
@@ -29,5 +33,13 @@ package com.mixpanel.android.mpmetrics;
 
     // Set to true to see lots of internal debugging logcat output.
     // This should be set to false in production builds
-    public static final boolean DEBUG = false;
+    // TODO : by lons
+    public static boolean DEBUG = false;
+    
+    // TODO : by lons
+    public static boolean TRUSTED_SERVER = false;
+    
+    public static int CONNECTION_TIMEOUT = 5000;
+    public static int SO_TIMEOUT = 5000;
+    
 }
