@@ -1,10 +1,9 @@
 
-
 This project forked.
 See original project : https://github.com/mixpanel/mixpanel-android
 
 
-Added :
+Changes :
 
 Add api for setting server.
 Add flag that make server trusted when using ssl for dev.
