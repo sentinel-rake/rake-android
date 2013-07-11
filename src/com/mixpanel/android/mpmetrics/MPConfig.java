@@ -33,12 +33,12 @@ package com.mixpanel.android.mpmetrics;
 
     // Set to true to see lots of internal debugging logcat output.
     // This should be set to false in production builds
-    // TODO : by lons
+    // LONS
     public static boolean DEBUG = false;
     
-    // TODO : by lons
+    // LONS
     public static boolean TRUSTED_SERVER = false;
-    
+    // LONS
     public static int CONNECTION_TIMEOUT = 5000;
     public static int SO_TIMEOUT = 5000;
     

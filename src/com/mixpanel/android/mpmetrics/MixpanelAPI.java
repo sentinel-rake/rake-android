@@ -267,7 +267,7 @@ public class MixpanelAPI {
         }
     }
     
-    // TODO : by lons
+    // LONS
     public void trackSimple(JSONObject properties) {
         String eventName = "simple";
         

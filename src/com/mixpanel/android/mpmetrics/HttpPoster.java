@@ -98,7 +98,7 @@ import com.mixpanel.android.util.StringUtils;
         HttpParams params = setParamsTimeout();
         HttpClient httpclient = new DefaultHttpClient(params);
         
-        //TODO: lons debug code
+        //LONS: 
         if(endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
         	Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
         	httpclient = sslClientDebug(httpclient);
@@ -117,6 +117,9 @@ import com.mixpanel.android.util.StringUtils;
                 String result = StringUtils.inputStreamToString(entity.getContent());
                 if (result.equals("1\n")) {
                     ret = PostResult.SUCCEEDED;
+                } else {
+                	// LONS:
+                	ret = PostResult.FAILED_RECOVERABLE;
                 }
             }
         } catch (IOException e) {
