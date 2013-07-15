@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="MixpanelAPI">
-
+	<property name="version" value="3.3.0.1"/>
+	  
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
@@ -66,6 +67,7 @@
         </and>
     </condition>
 
+    <echo message = "target : ${target}"/>
     <path id="project.javac.classpath">
       <pathelement path="${sdk.dir}/tools/support/annotations.jar" />
       <pathelement path="${sdk.dir}/platforms/${target}/android.jar" />
@@ -98,12 +100,21 @@
       </javac>
     </target>
 
+    
+	<script language="javascript">
+    	var target = project.getProperty("target");
+    	project.setProperty("target", target.replaceAll("android-", ""));
+		</script>
+	<echo>target=${target}</echo>
+    
+	
     <target name="library" depends="compile">
-      <jar destfile="MixpanelAPI.jar"
+      <property name="targetFile" value="MixpanelAPI${target}-${version}.jar"/>  
+      <jar destfile="${targetFile}"
            basedir="${out.classes.absolute.dir}"
            includes="**/*.class" />
-      <copy file="MixpanelAPI.jar" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar" />
-      <copy file="MixpanelAPI.jar" tofile="${test.absolute.libs.dir}/MixpanelAPI.jar" />
+      <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar" />
+      <copy file="${targetFile}" tofile="${test.absolute.libs.dir}/MixpanelAPI.jar" />
     </target>
 
     <target name="docs">
