@@ -270,7 +270,7 @@ public class MixpanelAPI {
     
     // LONS
     public void trackSimple(LinkedHashMap<String,String> properties) {
-        String eventName = "simple";
+        String eventName = "trackSimple";
         
         try {
             
