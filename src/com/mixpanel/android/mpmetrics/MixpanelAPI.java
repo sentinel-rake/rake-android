@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.LinkedHashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -268,7 +269,7 @@ public class MixpanelAPI {
     }
     
     // LONS
-    public void trackSimple(JSONObject properties) {
+    public void trackSimple(LinkedHashMap<String,String> properties) {
         String eventName = "simple";
         
         try {
@@ -279,16 +280,7 @@ public class MixpanelAPI {
             dataObj.put("mp_lib", "android");
             dataObj.put("lib_version", VERSION);
             
-            JSONObject propertiesObj = new JSONObject();
-            
-            if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
-                    String key = (String) iter.next();
-                    propertiesObj.put(key, properties.get(key));
-                }
-            }
-
-            dataObj.put("properties", propertiesObj);
+            dataObj.put("properties", properties);
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
