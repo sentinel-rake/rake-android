@@ -117,10 +117,7 @@ import com.mixpanel.android.util.StringUtils;
                 String result = StringUtils.inputStreamToString(entity.getContent());
                 if (result.equals("1\n")) {
                     ret = PostResult.SUCCEEDED;
-                } else {
-                	// LONS:
-                	ret = PostResult.FAILED_RECOVERABLE;
-                }
+                } 
             }
         } catch (IOException e) {
             Log.i(LOGTAG, "Cannot post message to Mixpanel Servers (May Retry)", e);
