@@ -235,13 +235,17 @@ public class MixpanelAPI {
         if (MPConfig.DEBUG) Log.d(LOGTAG, "track " + eventName);
 
         try {
-            long time = System.currentTimeMillis() / 1000;
-            JSONObject dataObj = new JSONObject();
+            //long time = System.currentTimeMillis() / 1000;
+            Date now = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            String time = format.format(now);
 
+            JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
+            dataObj.put("token", mToken);
+            dataObj.put("timeStamp", time);
+
             JSONObject propertiesObj = getDefaultEventProperties();
-            propertiesObj.put("token", mToken);
-            propertiesObj.put("time", time);
 
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
@@ -273,14 +277,29 @@ public class MixpanelAPI {
         String eventName = "trackSimple";
         
         try {
+            //long time = System.currentTimeMillis() / 1000;
+            Date now = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+            String time = format.format(now);
             
             JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
             dataObj.put("token", mToken);
-            dataObj.put("mp_lib", "android");
-            dataObj.put("lib_version", VERSION);
+            dataObj.put("timeStamp", time);
+
             
-            dataObj.put("properties", properties);
+            JSONObject propertiesObj = new JSONObject();
+            propertiesObj.put("mp_lib", "android");
+            propertiesObj.put("lib_version", VERSION);
+            
+            if (properties != null) {
+                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
+                    String key = (String) iter.next();
+                    propertiesObj.put(key, properties.get(key));
+                }
+            }
+
+            dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
@@ -290,7 +309,6 @@ public class MixpanelAPI {
     
     public void setBaseServer(Context context, String server) {
     	//MPConfig.BASE_ENDPOINT = server;
-    	//
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);
         //Log.i(LOGTAG, "MPConfig.BASE_ENDPOINT : " + MPConfig.BASE_ENDPOINT);
