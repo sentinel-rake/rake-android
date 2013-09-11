@@ -292,14 +292,7 @@ public class MixpanelAPI {
             propertiesObj.put("mp_lib", "android");
             propertiesObj.put("lib_version", VERSION);
             
-            if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
-                    String key = (String) iter.next();
-                    propertiesObj.put(key, properties.get(key));
-                }
-            }
-
-            dataObj.put("properties", propertiesObj);
+            dataObj.put("properties", properties);
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
