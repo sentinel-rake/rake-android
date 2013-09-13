@@ -46,6 +46,10 @@ import com.mixpanel.android.util.StringUtils;
 
 /* package */ class HttpPoster {
 
+    private static final String LOGTAG = "MixpanelAPI";
+    private final String mDefaultHost;
+    private final String mFallbackHost;
+
     public static enum PostResult {
         // The post was sent and understood by the Mixpanel service.
         SUCCEEDED,
@@ -67,9 +71,15 @@ import com.mixpanel.android.util.StringUtils;
     // Will return true only if the request was successful
     public PostResult postData(String rawMessage, String endpointPath) {
         String encodedData = Base64Coder.encodeString(rawMessage);
+        String compressedData = encodedData;
 
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        nameValuePairs.add(new BasicNameValuePair("data", encodedData));
+        Log.d("HttpPoster","[postData] encodedData Length : " + encodedData.length());
+        nameValuePairs.add(new BasicNameValuePair("data", compressedData));
+        Log.d("HttpPoster","[postData] compressedData Length : " + compressedData.length());
+
+        nameValuePairs.add(new BasicNameValuePair("isCompressed","false"));
+
 
         String defaultUrl = mDefaultHost + endpointPath;
         PostResult ret = postHttpRequest(defaultUrl, nameValuePairs);
@@ -97,6 +107,7 @@ import com.mixpanel.android.util.StringUtils;
         
         HttpParams params = setParamsTimeout();
         HttpClient httpclient = new DefaultHttpClient(params);
+
         
         //LONS: 
         if(endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
@@ -130,10 +141,6 @@ import com.mixpanel.android.util.StringUtils;
         return ret;
     }
 
-    private final String mDefaultHost;
-    private final String mFallbackHost;
-
-    private static final String LOGTAG = "MixpanelAPI";
     
     private HttpClient sslClientDebug(HttpClient client) {
         try {

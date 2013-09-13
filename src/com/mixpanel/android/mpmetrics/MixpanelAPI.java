@@ -238,6 +238,7 @@ public class MixpanelAPI {
             //long time = System.currentTimeMillis() / 1000;
             Date now = new Date();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
             String time = format.format(now);
 
             JSONObject dataObj = new JSONObject();
@@ -273,13 +274,14 @@ public class MixpanelAPI {
     }
     
     // LONS
-    public void trackSimple(LinkedHashMap<String,String> properties) {
+    public void trackSimple(JSONObject properties) {
         String eventName = "trackSimple";
         
         try {
             //long time = System.currentTimeMillis() / 1000;
             Date now = new Date();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
             String time = format.format(now);
             
             JSONObject dataObj = new JSONObject();
@@ -291,8 +293,15 @@ public class MixpanelAPI {
             JSONObject propertiesObj = new JSONObject();
             propertiesObj.put("mp_lib", "android");
             propertiesObj.put("lib_version", VERSION);
+
+            if (properties != null) {
+                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
+                    String key = (String) iter.next();
+                    propertiesObj.put(key, properties.get(key));
+                }
+            }
             
-            dataObj.put("properties", properties);
+            dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
