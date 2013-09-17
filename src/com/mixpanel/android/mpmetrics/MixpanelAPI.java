@@ -88,6 +88,7 @@ import android.util.Log;
  */
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
+    public static final String RAKE_VERSION = "0.3";
 
     /**
      * You shouldn't instantiate MixpanelAPI objects directly.
@@ -293,7 +294,7 @@ public class MixpanelAPI {
             
             JSONObject propertiesObj = new JSONObject();
             propertiesObj.put("mp_lib", "android");
-            propertiesObj.put("lib_version", VERSION);
+            propertiesObj.put("lib_version", VERSION+"rake_"+RAKE_VERSION);
 
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
@@ -988,7 +989,7 @@ public class MixpanelAPI {
         JSONObject ret = new JSONObject();
 
         ret.put("mp_lib", "android");
-        ret.put("$lib_version", VERSION);
+        ret.put("$lib_version", VERSION+"rake_"+RAKE_VERSION);
 
         // For querying together with data from other libraries
         ret.put("$os", "Android");
