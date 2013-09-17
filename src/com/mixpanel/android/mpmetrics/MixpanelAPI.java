@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.LinkedHashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -234,13 +235,18 @@ public class MixpanelAPI {
         if (MPConfig.DEBUG) Log.d(LOGTAG, "track " + eventName);
 
         try {
-            long time = System.currentTimeMillis() / 1000;
-            JSONObject dataObj = new JSONObject();
+            //long time = System.currentTimeMillis() / 1000;
+            Date now = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
+            String time = format.format(now);
 
+            JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
+            dataObj.put("token", mToken);
+            dataObj.put("timeStamp", time);
+
             JSONObject propertiesObj = getDefaultEventProperties();
-            propertiesObj.put("token", mToken);
-            propertiesObj.put("time", time);
 
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
@@ -269,25 +275,33 @@ public class MixpanelAPI {
     
     // LONS
     public void trackSimple(JSONObject properties) {
-        String eventName = "simple";
+        String eventName = "trackSimple";
         
         try {
+            //long time = System.currentTimeMillis() / 1000;
+            Date now = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
+            String timeStamp = format.format(now);
             
             JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
             dataObj.put("token", mToken);
-            dataObj.put("mp_lib", "android");
-            dataObj.put("lib_version", VERSION);
+            dataObj.put("timeStamp", timeStamp);
+
+            Log.d(LOGTAG,"[trackSimple] " + timeStamp);
             
             JSONObject propertiesObj = new JSONObject();
-            
+            propertiesObj.put("mp_lib", "android");
+            propertiesObj.put("lib_version", VERSION);
+
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
                     String key = (String) iter.next();
                     propertiesObj.put(key, properties.get(key));
                 }
             }
-
+            
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
@@ -298,7 +312,6 @@ public class MixpanelAPI {
     
     public void setBaseServer(Context context, String server) {
     	//MPConfig.BASE_ENDPOINT = server;
-    	//
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);
         //Log.i(LOGTAG, "MPConfig.BASE_ENDPOINT : " + MPConfig.BASE_ENDPOINT);
