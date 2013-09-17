@@ -282,13 +282,14 @@ public class MixpanelAPI {
             Date now = new Date();
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
             format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
-            String time = format.format(now);
+            String timeStamp = format.format(now);
             
             JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
             dataObj.put("token", mToken);
-            dataObj.put("timeStamp", time);
+            dataObj.put("timeStamp", timeStamp);
 
+            Log.d(LOGTAG,"[trackSimple] " + timeStamp);
             
             JSONObject propertiesObj = new JSONObject();
             propertiesObj.put("mp_lib", "android");

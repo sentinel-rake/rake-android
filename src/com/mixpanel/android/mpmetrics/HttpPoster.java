@@ -41,8 +41,16 @@ import org.apache.http.params.HttpParams;
 
 import android.util.Log;
 
+
 import com.mixpanel.android.util.Base64Coder;
 import com.mixpanel.android.util.StringUtils;
+
+import de.jarnbjo.jsnappy.SnappyCompressor;
+import de.jarnbjo.jsnappy.SnappyDecompressor;
+import de.jarnbjo.jsnappy.Buffer;
+
+import java.util.Arrays;
+import java.net.URLDecoder;
 
 /* package */ class HttpPoster {
 
@@ -70,19 +78,29 @@ import com.mixpanel.android.util.StringUtils;
 
     // Will return true only if the request was successful
     public PostResult postData(String rawMessage, String endpointPath) {
-        String encodedData = Base64Coder.encodeString(rawMessage);
-        String compressedData = encodedData;
+        String encodedData = null;
+        
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
 
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        Log.d("HttpPoster","[postData] encodedData Length : " + encodedData.length());
-        nameValuePairs.add(new BasicNameValuePair("data", compressedData));
-        Log.d("HttpPoster","[postData] compressedData Length : " + compressedData.length());
+        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
 
-        nameValuePairs.add(new BasicNameValuePair("isCompressed","false"));
+        //Log.d(LOGTAG,"[postData] compressed toByteArray() : " + compressedBuffer.toByteArray());
+        //Log.d(LOGTAG,"[postData] compressed getData() : " + compressedBuffer.getData());
+        //Log.d(LOGTAG,"[postData] compressed length :" + compressedBuffer.getLength());
+        //Log.d(LOGTAG,"[postData] compressed getData() length : " + new String(compressedBuffer.getData()).length());
+        if(rawMessage.length() > compressedBuffer.getLength()){
+            nameValuePairs.add(new BasicNameValuePair("compress","snappy"));
+            encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
+        }else{
+            nameValuePairs.add(new BasicNameValuePair("compress","plain"));
+            encodedData = Base64Coder.encodeString(rawMessage);
+        }
 
+        nameValuePairs.add(new BasicNameValuePair("data", encodedData));
 
         String defaultUrl = mDefaultHost + endpointPath;
         PostResult ret = postHttpRequest(defaultUrl, nameValuePairs);
+
         if (ret == PostResult.FAILED_RECOVERABLE && mFallbackHost != null) {
             String fallbackUrl = mFallbackHost + endpointPath;
             if (MPConfig.DEBUG) Log.i(LOGTAG, "Retrying post with new URL: " + fallbackUrl);
@@ -97,7 +115,7 @@ import com.mixpanel.android.util.StringUtils;
     	HttpParams httpParameters = new BasicHttpParams();
     	int timeoutConnection = 3000;
         HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
-        int timeoutSocket = 5000;
+        int timeoutSocket = 120000;
         HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
         return httpParameters;
     }
@@ -120,12 +138,28 @@ import com.mixpanel.android.util.StringUtils;
         HttpPost httppost = new HttpPost(endpointUrl);
 
         try {
+
+            String urlEncoded = StringUtils.inputStreamToString(new UrlEncodedFormEntity(nameValuePairs).getContent());
+            Log.d(LOGTAG,"[postHttpRequest] urlEncoded : " + urlEncoded);
+            Log.d(LOGTAG,"[postHttpRequest] urlEncoded length : " + urlEncoded.length());
+
+            /* test 
+            String urlDecoded = URLDecoder.decode(urlEncoded);
+            urlDecoded = urlDecoded.split("&")[1].split("data=")[1];
+            urlDecoded = Base64Coder.decodeString(urlDecoded);
+            Log.d(LOGTAG,"[postHttpRequest] urlDecoded : " + urlDecoded);
+            Buffer decompressedBuffer = SnappyDecompressor.decompress(urlDecoded.getBytes());
+            Log.d(LOGTAG,"[postHttpRequest] decompressedBuffer : " + decompressedBuffer.toByteArray());
+            /* end of test */
+
             httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
 
             if (entity != null) {
                 String result = StringUtils.inputStreamToString(entity.getContent());
+                Log.d(LOGTAG,"[postHttpRequest] result ret : " + result);
                 if (result.equals("1\n")) {
                     ret = PostResult.SUCCEEDED;
                 } 

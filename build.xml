@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="MixpanelAPI">
-	<property name="version" value="3.3.0.1"/>
+    <property name="version" value="3.3.0.1"/>
+    <property name="rake-version" value="0.3"/>
 	  
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
@@ -37,6 +38,7 @@
     <!-- These properties are copied pretty directly from
          $ANDROID_HOME/tools/ant/build.xml -->
     <property name="source.dir" value="src" />
+    <property name="lib.dir" value="libs" />
     <property name="source.absolute.dir" location="${source.dir}" />
     <property name="docs.dir" value="docs" />
     <property name="docs.absolute.dir" location="${docs.dir}" />
@@ -71,6 +73,7 @@
     <path id="project.javac.classpath">
       <pathelement path="${sdk.dir}/tools/support/annotations.jar" />
       <pathelement path="${sdk.dir}/platforms/${target}/android.jar" />
+      <pathelement path="libs/JSnappy-0.9.1.jar" />
     </path>
 
     <target name="clean">
@@ -109,12 +112,11 @@
     
 	
     <target name="library" depends="compile">
-      <property name="targetFile" value="MixpanelAPI${target}-${version}.jar"/>  
-      <jar destfile="${targetFile}"
-           basedir="${out.classes.absolute.dir}"
-           includes="**/*.class" />
-      <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar" />
-      <copy file="${targetFile}" tofile="${test.absolute.libs.dir}/MixpanelAPI.jar" />
+        <property name="targetFile" value="MixpanelAPI${target}-${version}-rake-${rake-version}.jar"/>
+        <jar destfile="${targetFile}" basedir="${out.classes.absolute.dir}" includes="**/*.class" >
+            <zipgroupfileset dir="libs" includes="*.jar"/>
+        </jar>
+       <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar" />
     </target>
 
     <target name="docs">
