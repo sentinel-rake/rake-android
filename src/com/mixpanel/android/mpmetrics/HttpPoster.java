@@ -50,7 +50,6 @@ import de.jarnbjo.jsnappy.SnappyDecompressor;
 import de.jarnbjo.jsnappy.Buffer;
 
 import java.util.Arrays;
-import java.net.URLDecoder;
 
 /* package */ class HttpPoster {
 
@@ -79,15 +78,9 @@ import java.net.URLDecoder;
     // Will return true only if the request was successful
     public PostResult postData(String rawMessage, String endpointPath) {
         String encodedData = null;
-        
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-
         Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
 
-        //Log.d(LOGTAG,"[postData] compressed toByteArray() : " + compressedBuffer.toByteArray());
-        //Log.d(LOGTAG,"[postData] compressed getData() : " + compressedBuffer.getData());
-        //Log.d(LOGTAG,"[postData] compressed length :" + compressedBuffer.getLength());
-        //Log.d(LOGTAG,"[postData] compressed getData() length : " + new String(compressedBuffer.getData()).length());
         if(rawMessage.length() > compressedBuffer.getLength()){
             nameValuePairs.add(new BasicNameValuePair("compress","snappy"));
             encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
@@ -140,18 +133,6 @@ import java.net.URLDecoder;
         try {
 
             String urlEncoded = StringUtils.inputStreamToString(new UrlEncodedFormEntity(nameValuePairs).getContent());
-            Log.d(LOGTAG,"[postHttpRequest] urlEncoded : " + urlEncoded);
-            Log.d(LOGTAG,"[postHttpRequest] urlEncoded length : " + urlEncoded.length());
-
-            /* test 
-            String urlDecoded = URLDecoder.decode(urlEncoded);
-            urlDecoded = urlDecoded.split("&")[1].split("data=")[1];
-            urlDecoded = Base64Coder.decodeString(urlDecoded);
-            Log.d(LOGTAG,"[postHttpRequest] urlDecoded : " + urlDecoded);
-            Buffer decompressedBuffer = SnappyDecompressor.decompress(urlDecoded.getBytes());
-            Log.d(LOGTAG,"[postHttpRequest] decompressedBuffer : " + decompressedBuffer.toByteArray());
-            /* end of test */
-
             httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             HttpResponse response = httpclient.execute(httppost);
