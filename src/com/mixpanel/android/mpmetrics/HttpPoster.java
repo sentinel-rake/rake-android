@@ -77,18 +77,20 @@ import java.util.Arrays;
 
     // Will return true only if the request was successful
     public PostResult postData(String rawMessage, String endpointPath) {
-        String encodedData = null;
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
+        String encodedData = null;
+        String compress = null;
 
+        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
         if(rawMessage.length() > compressedBuffer.getLength()){
-            nameValuePairs.add(new BasicNameValuePair("compress","snappy"));
+            compress = "snappy";
             encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
         }else{
-            nameValuePairs.add(new BasicNameValuePair("compress","plain"));
+            compress = "plain";
             encodedData = Base64Coder.encodeString(rawMessage);
         }
 
+        nameValuePairs.add(new BasicNameValuePair("compress",compress));
         nameValuePairs.add(new BasicNameValuePair("data", encodedData));
 
         String defaultUrl = mDefaultHost + endpointPath;
@@ -119,7 +121,6 @@ import java.util.Arrays;
         HttpParams params = setParamsTimeout();
         HttpClient httpclient = new DefaultHttpClient(params);
 
-        
         //LONS: 
         if(endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
         	Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
