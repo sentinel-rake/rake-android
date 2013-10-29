@@ -89,6 +89,7 @@ import android.util.Log;
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
     public static final String RAKE_VERSION = "0.3";
+    public static final String CLIENT_VERSION = "0.2";
 
     /**
      * You shouldn't instantiate MixpanelAPI objects directly.
@@ -290,7 +291,7 @@ public class MixpanelAPI {
             dataObj.put("token", mToken);
             dataObj.put("timeStamp", timeStamp);
 
-            Log.d(LOGTAG,"[trackSimple] " + timeStamp);
+            if (MPConfig.DEBUG) Log.d(LOGTAG,"[trackSimple] " + timeStamp);
             
             JSONObject propertiesObj = new JSONObject();
             propertiesObj.put("mp_lib", "android");
