@@ -105,7 +105,7 @@ public class MixpanelAPI {
 
         mStoredPreferences = context.getSharedPreferences("com.mixpanel.android.mpmetrics.MixpanelAPI_" + token, Context.MODE_PRIVATE);
         readSuperProperties();
-        readIdentities();
+        //readIdentities();
     }
     
 
@@ -250,14 +250,18 @@ public class MixpanelAPI {
         try {
             //long time = System.currentTimeMillis() / 1000;
             Date now = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
-            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
-            String time = format.format(now);
+            SimpleDateFormat baseTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            baseTimeFormat.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
+            String baseTime = baseTimeFormat.format(now);
+
+            SimpleDateFormat localTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            String localTime = localTimeFormat.format(now);
 
             JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
             dataObj.put("token", mToken);
-            dataObj.put("timeStamp", time);
+            dataObj.put("baseTime", baseTime);
+            dataObj.put("localTime", localTime);
 
             JSONObject propertiesObj = getDefaultEventProperties();
 
@@ -266,10 +270,10 @@ public class MixpanelAPI {
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
-            String eventsId = getDistinctId();
-            if (eventsId != null) {
-                propertiesObj.put("distinct_id", eventsId);
-            }
+//            String eventsId = getDistinctId();
+//            if (eventsId != null) {
+//                propertiesObj.put("distinct_id", eventsId);
+//            }
 
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
@@ -990,21 +994,38 @@ public class MixpanelAPI {
             ret.put("appVersion", applicationVersionName);
 
         Boolean hasNFC = mSystemInformation.hasNFC();
-        if (null != hasNFC)
+        if (null != hasNFC){
             ret.put("hasNfc", hasNFC.booleanValue());
+        }else{
+        	   ret.put("hasNfc", "UNKNOWN");
+        }
 
         Boolean hasTelephony = mSystemInformation.hasTelephony();
-        if (null != hasTelephony)
+        if (null != hasTelephony){
             ret.put("hasTelephone", hasTelephony.booleanValue());
+        }else{
+        	ret.put("hasTelephone", "UNKNOWN");
+        }
 
         String carrier = mSystemInformation.getCurrentNetworkOperator();
-        if (null != carrier)
+        if (null != carrier){
             ret.put("carrier", carrier);
+        }else{
+        	ret.put("carrier", "UNKNOWN");
+        }
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
-        if (null != isWifi)
-            ret.put("wifi", isWifi.booleanValue());
-
+        if (null != isWifi){
+        	if(isWifi.booleanValue()){
+        		ret.put("networkType", "WIFI");
+        	}else{
+        		ret.put("networkType", "NOT WIFI");
+        	}        	
+        }else{
+        	ret.put("networkType", "UNKNOWN");
+        }
+        
+        
 
         
         // TODO : language, - should test it!
