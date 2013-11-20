@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="MixpanelAPI">
     <property name="version" value="3.3.0.1"/>
-    <property name="rake-version" value="0.3.1"/>
+    <property name="rake-version" value="0.4.0"/>
+    <property name="client-version" value="0.1.0"/>
 	  
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
@@ -112,7 +113,7 @@
     
 	
     <target name="library" depends="compile">
-        <property name="targetFile" value="MixpanelAPI${target}-${version}-rake-${rake-version}.jar"/>
+        <property name="targetFile" value="MixpanelAPI${target}-${version}-rake-${rake-version}-client-${client-version}.jar"/>
         <jar destfile="${targetFile}" basedir="${out.classes.absolute.dir}" includes="**/*.class" >
             <zipgroupfileset dir="libs" includes="*.jar"/>
         </jar>

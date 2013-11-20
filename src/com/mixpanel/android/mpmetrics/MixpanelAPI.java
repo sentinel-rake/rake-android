@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.LinkedHashMap;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +20,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log; 
+
 
 /**
  * Core class for interacting with Mixpanel Analytics.
@@ -88,8 +87,8 @@ import android.util.Log;
  */
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
-    public static final String RAKE_VERSION = "0.3";
-    public static final String CLIENT_VERSION = "0.2";
+    public static final String RAKE_VERSION = "0.4.1";
+    public static final String CLIENT_VERSION = "1.0";
 
     /**
      * You shouldn't instantiate MixpanelAPI objects directly.
@@ -106,7 +105,7 @@ public class MixpanelAPI {
 
         mStoredPreferences = context.getSharedPreferences("com.mixpanel.android.mpmetrics.MixpanelAPI_" + token, Context.MODE_PRIVATE);
         readSuperProperties();
-        readIdentities();    	
+        readIdentities();
     }
     
 
@@ -138,7 +137,7 @@ public class MixpanelAPI {
      *     in the settings dialog.
      * @return an instance of MixpanelAPI associated with your project
      */
-    public static MixpanelAPI getInstance(Context context, String token) {
+    public static MixpanelAPI getInstance(Context context, String token, Boolean isDevServer) {
         synchronized (sInstanceMap) {
             Context appContext = context.getApplicationContext();
             Map <Context, MixpanelAPI> instances = sInstanceMap.get(token);
@@ -150,9 +149,21 @@ public class MixpanelAPI {
             if (instance == null) {
                 instance = new MixpanelAPI(appContext, token);
                 instances.put(appContext, instance);
+                
+                if(isDevServer){
+                    instance.setBaseServer(context, MPConfig.DEV_BASE_ENDPOINT);
+                    instance.setFallbackServer(context, MPConfig.DEV_FALLBACK_ENDPOINT);
+                }else{
+                    instance.setBaseServer(context, MPConfig.BASE_ENDPOINT);
+                    instance.setFallbackServer(context, MPConfig.FALLBACK_ENDPOINT);
+                }
             }
             return instance;
         }
+    }
+
+    public static MixpanelAPI getInstance(Context context, String token) {
+        return getInstance(context, token, false);
     }
    
 
@@ -275,50 +286,14 @@ public class MixpanelAPI {
         }
     }
     
-    // LONS
-    public void trackSimple(JSONObject properties) {
-        String eventName = "trackSimple";
-        
-        try {
-            //long time = System.currentTimeMillis() / 1000;
-            Date now = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
-            String timeStamp = format.format(now);
-            
-            JSONObject dataObj = new JSONObject();
-            dataObj.put("event", eventName);
-            dataObj.put("token", mToken);
-            dataObj.put("timeStamp", timeStamp);
-
-            if (MPConfig.DEBUG) Log.d(LOGTAG,"[trackSimple] " + timeStamp);
-            
-            JSONObject propertiesObj = new JSONObject();
-            propertiesObj.put("mp_lib", "android");
-            propertiesObj.put("lib_version", VERSION+"rake_"+RAKE_VERSION);
-
-            if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
-                    String key = (String) iter.next();
-                    propertiesObj.put(key, properties.get(key));
-                }
-            }
-            
-            dataObj.put("properties", propertiesObj);
-
-            mMessages.eventsMessage(dataObj);
-        } catch (JSONException e) {
-            Log.e(LOGTAG, "Exception tracking event " + eventName, e);
-        }
-    }
     
-    public void setBaseServer(Context context, String server) {
+    private void setBaseServer(Context context, String server) {
     	//MPConfig.BASE_ENDPOINT = server;
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);
         //Log.i(LOGTAG, "MPConfig.BASE_ENDPOINT : " + MPConfig.BASE_ENDPOINT);
     }
-    public void setFallbackServer(Context context, String server) {
+    private void setFallbackServer(Context context, String server) {
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setFallbackHost(server);
     	//Log.i(LOGTAG, "MPConfig.FALLBACK_ENDPOINT : " + MPConfig.FALLBACK_ENDPOINT);
@@ -989,41 +964,53 @@ public class MixpanelAPI {
                 throws JSONException {
         JSONObject ret = new JSONObject();
 
-        ret.put("mp_lib", "android");
-        ret.put("$lib_version", VERSION+"rake_"+RAKE_VERSION);
+        ret.put("rakeLib", "android");
+        ret.put("rakeLibVersion", VERSION+"rake_"+RAKE_VERSION);
 
         // For querying together with data from other libraries
-        ret.put("$os", "Android");
-        ret.put("$os_version", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
+        ret.put("osName", "Android");
+        ret.put("osVersion", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
 
-        ret.put("$manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
-        ret.put("$brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
-        ret.put("$model", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
+        ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
+        ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
+        ret.put("deviceModel", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
 
         DisplayMetrics displayMetrics = mSystemInformation.getDisplayMetrics();
-        ret.put("$screen_dpi", displayMetrics.densityDpi);
-        ret.put("$screen_height", displayMetrics.heightPixels);
-        ret.put("$screen_width", displayMetrics.widthPixels);
+        ret.put("screenDpi", displayMetrics.densityDpi);
+        ret.put("screenHeight", displayMetrics.heightPixels);
+        ret.put("screenWidth", displayMetrics.widthPixels);
+        StringBuilder resolutionBuilder = new StringBuilder();
+        resolutionBuilder.append(displayMetrics.widthPixels);
+        resolutionBuilder.append("x");
+        resolutionBuilder.append(displayMetrics.heightPixels);        
+        ret.put("resolution", resolutionBuilder.toString());
 
         String applicationVersionName = mSystemInformation.getAppVersionName();
         if (null != applicationVersionName)
-            ret.put("$app_version", applicationVersionName);
+            ret.put("appVersion", applicationVersionName);
 
         Boolean hasNFC = mSystemInformation.hasNFC();
         if (null != hasNFC)
-            ret.put("$has_nfc", hasNFC.booleanValue());
+            ret.put("hasNfc", hasNFC.booleanValue());
 
         Boolean hasTelephony = mSystemInformation.hasTelephony();
         if (null != hasTelephony)
-            ret.put("$has_telephone", hasTelephony.booleanValue());
+            ret.put("hasTelephone", hasTelephony.booleanValue());
 
         String carrier = mSystemInformation.getCurrentNetworkOperator();
         if (null != carrier)
-            ret.put("$carrier", carrier);
+            ret.put("carrier", carrier);
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
         if (null != isWifi)
-            ret.put("$wifi", isWifi.booleanValue());
+            ret.put("wifi", isWifi.booleanValue());
+
+
+        
+        // TODO : language, - should test it!
+        ret.put("language", mContext.getResources().getConfiguration().locale.getCountry());
+        
+        
 
         return ret;
     }
