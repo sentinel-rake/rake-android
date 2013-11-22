@@ -10,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -71,8 +73,12 @@ import android.view.WindowManager;
 
         Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         display.getMetrics(mDisplayMetrics);
+        
+        mDeviceId = Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    public String getDeviceId() { return mDeviceId; }
+    
     public String getAppVersionName() { return mAppVersionName; }
 
     public Integer getAppVersionCode() { return mAppVersionCode; }
@@ -143,4 +149,5 @@ import android.view.WindowManager;
     private final DisplayMetrics mDisplayMetrics;
     private final String mAppVersionName;
     private final Integer mAppVersionCode;
+    private final String mDeviceId;
 }

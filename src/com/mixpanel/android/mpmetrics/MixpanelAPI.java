@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.LinkedHashMap;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -988,37 +986,63 @@ public class MixpanelAPI {
                 throws JSONException {
         JSONObject ret = new JSONObject();
 
-        ret.put("mp_lib", "android");
-        ret.put("$lib_version", VERSION+"rake_"+RAKE_VERSION);
+        ret.put("rakeLib", "android");
+        ret.put("rakeLibVersion", "r"+RAKE_VERSION+"_c"+CLIENT_VERSION);
 
         // For querying together with data from other libraries
         ret.put("$os", "Android");
         ret.put("$os_version", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
 
-        ret.put("$manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
-        ret.put("$brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
-        ret.put("$model", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
+        ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
+//        ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
+        ret.put("deviceModel", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
+        ret.put("deviceId",mSystemInformation.getDeviceId());
 
         DisplayMetrics displayMetrics = mSystemInformation.getDisplayMetrics();
-        ret.put("$screen_dpi", displayMetrics.densityDpi);
-        ret.put("$screen_height", displayMetrics.heightPixels);
-        ret.put("$screen_width", displayMetrics.widthPixels);
+        //ret.put("screenDpi", displayMetrics.densityDpi);
+        ret.put("screenHeight", displayMetrics.heightPixels);
+        ret.put("screenWidth", displayMetrics.widthPixels);
+        StringBuilder resolutionBuilder = new StringBuilder();
+        resolutionBuilder.append(displayMetrics.widthPixels);
+        resolutionBuilder.append("*");
+        resolutionBuilder.append(displayMetrics.heightPixels);        
+        ret.put("resolution", resolutionBuilder.toString());
 
         String applicationVersionName = mSystemInformation.getAppVersionName();
-        if (null != applicationVersionName)
-            ret.put("$app_version", applicationVersionName);
+ 
+        if (null != applicationVersionName){
+            ret.put("appVersion", applicationVersionName);
+        }else{
+        	ret.put("appVersion", "UNKNOWN");
+        }
+
+//        Integer applicationVersionCode = mSystemInformation.getAppVersionCode();
+//        if(null != applicationVersionCode){
+//        	ret.put("appRelease", applicationVersionCode);        	
+//        }else{
+//        	ret.put("appRelease", "UNKNOWN");
+//        }
 
         Boolean hasNFC = mSystemInformation.hasNFC();
-        if (null != hasNFC)
-            ret.put("$has_nfc", hasNFC.booleanValue());
+        if (null != hasNFC){        	
+            ret.put("hasNfc", hasNFC.booleanValue());
+        }else{
+           ret.put("hasNfc", "UNKNOWN");
+        }
 
-        Boolean hasTelephony = mSystemInformation.hasTelephony();
-        if (null != hasTelephony)
-            ret.put("$has_telephone", hasTelephony.booleanValue());
+//        Boolean hasTelephony = mSystemInformation.hasTelephony();
+//        if (null != hasTelephony){
+//            ret.put("hasTelephone", hasTelephony.booleanValue());
+//        }else{
+//        	ret.put("hasTelephone", "UNKNOWN");
+//        }
 
         String carrier = mSystemInformation.getCurrentNetworkOperator();
-        if (null != carrier)
-            ret.put("$carrier", carrier);
+        if (null != carrier && carrier.length() > 0){
+       		ret.put("carrierName", carrier);
+        }else{
+        	ret.put("carrierName", "UNKNOWN");
+        }
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
         if (null != isWifi)
