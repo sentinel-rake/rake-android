@@ -21,6 +21,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log; 
 
+
 /**
  * Core class for interacting with Mixpanel Analytics.
  *
@@ -86,7 +87,8 @@ import android.util.Log;
  */
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
-    public static final String RAKE_VERSION = "0.3";
+    public static final String RAKE_VERSION = "0.4.1";
+    public static final String CLIENT_VERSION = "1.0";
 
     /**
      * You shouldn't instantiate MixpanelAPI objects directly.
@@ -103,7 +105,7 @@ public class MixpanelAPI {
 
         mStoredPreferences = context.getSharedPreferences("com.mixpanel.android.mpmetrics.MixpanelAPI_" + token, Context.MODE_PRIVATE);
         readSuperProperties();
-        readIdentities();    	
+        //readIdentities();
     }
     
 
@@ -135,7 +137,7 @@ public class MixpanelAPI {
      *     in the settings dialog.
      * @return an instance of MixpanelAPI associated with your project
      */
-    public static MixpanelAPI getInstance(Context context, String token) {
+    public static MixpanelAPI getInstance(Context context, String token, Boolean isDevServer) {
         synchronized (sInstanceMap) {
             Context appContext = context.getApplicationContext();
             Map <Context, MixpanelAPI> instances = sInstanceMap.get(token);
@@ -147,9 +149,21 @@ public class MixpanelAPI {
             if (instance == null) {
                 instance = new MixpanelAPI(appContext, token);
                 instances.put(appContext, instance);
+                
+                if(isDevServer){
+                    instance.setBaseServer(context, MPConfig.DEV_BASE_ENDPOINT);
+                    instance.setFallbackServer(context, MPConfig.DEV_FALLBACK_ENDPOINT);
+                }else{
+                    instance.setBaseServer(context, MPConfig.BASE_ENDPOINT);
+                    instance.setFallbackServer(context, MPConfig.FALLBACK_ENDPOINT);
+                }
             }
             return instance;
         }
+    }
+
+    public static MixpanelAPI getInstance(Context context, String token) {
+        return getInstance(context, token, false);
     }
    
 
@@ -236,14 +250,18 @@ public class MixpanelAPI {
         try {
             //long time = System.currentTimeMillis() / 1000;
             Date now = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
-            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
-            String time = format.format(now);
+            SimpleDateFormat baseTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            baseTimeFormat.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
+            String baseTime = baseTimeFormat.format(now);
+
+            SimpleDateFormat localTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS"); 
+            String localTime = localTimeFormat.format(now);
 
             JSONObject dataObj = new JSONObject();
             dataObj.put("event", eventName);
             dataObj.put("token", mToken);
-            dataObj.put("timeStamp", time);
+            dataObj.put("baseTime", baseTime);
+            dataObj.put("localTime", localTime);
 
             JSONObject propertiesObj = getDefaultEventProperties();
 
@@ -252,10 +270,10 @@ public class MixpanelAPI {
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
-            String eventsId = getDistinctId();
-            if (eventsId != null) {
-                propertiesObj.put("distinct_id", eventsId);
-            }
+//            String eventsId = getDistinctId();
+//            if (eventsId != null) {
+//                propertiesObj.put("distinct_id", eventsId);
+//            }
 
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
@@ -272,50 +290,14 @@ public class MixpanelAPI {
         }
     }
     
-    // LONS
-    public void trackSimple(JSONObject properties) {
-        String eventName = "trackSimple";
-        
-        try {
-            //long time = System.currentTimeMillis() / 1000;
-            Date now = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-            format.setTimeZone (TimeZone.getTimeZone( "Asia/Seoul" ));
-            String timeStamp = format.format(now);
-            
-            JSONObject dataObj = new JSONObject();
-            dataObj.put("event", eventName);
-            dataObj.put("token", mToken);
-            dataObj.put("timeStamp", timeStamp);
-
-            Log.d(LOGTAG,"[trackSimple] " + timeStamp);
-            
-            JSONObject propertiesObj = new JSONObject();
-            propertiesObj.put("mp_lib", "android");
-            propertiesObj.put("lib_version", VERSION+"rake_"+RAKE_VERSION);
-
-            if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext();) {
-                    String key = (String) iter.next();
-                    propertiesObj.put(key, properties.get(key));
-                }
-            }
-            
-            dataObj.put("properties", propertiesObj);
-
-            mMessages.eventsMessage(dataObj);
-        } catch (JSONException e) {
-            Log.e(LOGTAG, "Exception tracking event " + eventName, e);
-        }
-    }
     
-    public void setBaseServer(Context context, String server) {
+    private void setBaseServer(Context context, String server) {
     	//MPConfig.BASE_ENDPOINT = server;
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);
         //Log.i(LOGTAG, "MPConfig.BASE_ENDPOINT : " + MPConfig.BASE_ENDPOINT);
     }
-    public void setFallbackServer(Context context, String server) {
+    private void setFallbackServer(Context context, String server) {
     	AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setFallbackHost(server);
     	//Log.i(LOGTAG, "MPConfig.FALLBACK_ENDPOINT : " + MPConfig.FALLBACK_ENDPOINT);
@@ -990,8 +972,8 @@ public class MixpanelAPI {
         ret.put("rakeLibVersion", "r"+RAKE_VERSION+"_c"+CLIENT_VERSION);
 
         // For querying together with data from other libraries
-        ret.put("$os", "Android");
-        ret.put("$os_version", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
+        ret.put("osName", "Android");
+        ret.put("osVersion", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
 
         ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
 //        ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
@@ -1045,9 +1027,18 @@ public class MixpanelAPI {
         }
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
-        if (null != isWifi)
-            ret.put("$wifi", isWifi.booleanValue());
-
+        if (null != isWifi){
+        	if(isWifi.booleanValue()){
+        		ret.put("networkType", "WIFI");
+        	}else{
+        		ret.put("networkType", "NOT WIFI");
+        	}        	
+        }else{
+        	ret.put("networkType", "UNKNOWN");
+        }
+     
+        ret.put("language", mContext.getResources().getConfiguration().locale.getCountry());
+        
         return ret;
     }
 

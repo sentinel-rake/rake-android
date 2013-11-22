@@ -123,10 +123,10 @@ import java.util.Arrays;
 
         //LONS: 
         if(endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
-        	Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
+        	//Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
         	httpclient = sslClientDebug(httpclient);
         } else {
-        	Log.d(LOGTAG, "original https client used");	
+        	//Log.d(LOGTAG, "original https client used");	
         }        
         
         HttpPost httppost = new HttpPost(endpointUrl);
@@ -141,7 +141,6 @@ import java.util.Arrays;
 
             if (entity != null) {
                 String result = StringUtils.inputStreamToString(entity.getContent());
-                Log.d(LOGTAG,"[postHttpRequest] result ret : " + result);
                 if (result.equals("1\n")) {
                     ret = PostResult.SUCCEEDED;
                 } 

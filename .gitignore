@@ -2,3 +2,6 @@ local.properties
 bin
 gen
 docs
+demo/Hello Mixpanel/libs/
+test/libs/
+Mixpanel*-rake-*.jar
