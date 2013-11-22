@@ -969,49 +969,61 @@ public class MixpanelAPI {
         JSONObject ret = new JSONObject();
 
         ret.put("rakeLib", "android");
-        ret.put("rakeLibVersion", VERSION+"rake_"+RAKE_VERSION);
+        ret.put("rakeLibVersion", "r"+RAKE_VERSION+"_c"+CLIENT_VERSION);
 
         // For querying together with data from other libraries
         ret.put("osName", "Android");
         ret.put("osVersion", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
 
         ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
-        ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
+//        ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
         ret.put("deviceModel", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
+        ret.put("deviceId",mSystemInformation.getDeviceId());
 
         DisplayMetrics displayMetrics = mSystemInformation.getDisplayMetrics();
-        ret.put("screenDpi", displayMetrics.densityDpi);
+        //ret.put("screenDpi", displayMetrics.densityDpi);
         ret.put("screenHeight", displayMetrics.heightPixels);
         ret.put("screenWidth", displayMetrics.widthPixels);
         StringBuilder resolutionBuilder = new StringBuilder();
         resolutionBuilder.append(displayMetrics.widthPixels);
-        resolutionBuilder.append("x");
+        resolutionBuilder.append("*");
         resolutionBuilder.append(displayMetrics.heightPixels);        
         ret.put("resolution", resolutionBuilder.toString());
 
         String applicationVersionName = mSystemInformation.getAppVersionName();
-        if (null != applicationVersionName)
+ 
+        if (null != applicationVersionName){
             ret.put("appVersion", applicationVersionName);
+        }else{
+        	ret.put("appVersion", "UNKNOWN");
+        }
+
+//        Integer applicationVersionCode = mSystemInformation.getAppVersionCode();
+//        if(null != applicationVersionCode){
+//        	ret.put("appRelease", applicationVersionCode);        	
+//        }else{
+//        	ret.put("appRelease", "UNKNOWN");
+//        }
 
         Boolean hasNFC = mSystemInformation.hasNFC();
-        if (null != hasNFC){
+        if (null != hasNFC){        	
             ret.put("hasNfc", hasNFC.booleanValue());
         }else{
-        	   ret.put("hasNfc", "UNKNOWN");
+           ret.put("hasNfc", "UNKNOWN");
         }
 
-        Boolean hasTelephony = mSystemInformation.hasTelephony();
-        if (null != hasTelephony){
-            ret.put("hasTelephone", hasTelephony.booleanValue());
-        }else{
-        	ret.put("hasTelephone", "UNKNOWN");
-        }
+//        Boolean hasTelephony = mSystemInformation.hasTelephony();
+//        if (null != hasTelephony){
+//            ret.put("hasTelephone", hasTelephony.booleanValue());
+//        }else{
+//        	ret.put("hasTelephone", "UNKNOWN");
+//        }
 
         String carrier = mSystemInformation.getCurrentNetworkOperator();
-        if (null != carrier){
-            ret.put("carrier", carrier);
+        if (null != carrier && carrier.length() > 0){
+       		ret.put("carrierName", carrier);
         }else{
-        	ret.put("carrier", "UNKNOWN");
+        	ret.put("carrierName", "UNKNOWN");
         }
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
@@ -1024,15 +1036,9 @@ public class MixpanelAPI {
         }else{
         	ret.put("networkType", "UNKNOWN");
         }
-        
-        
-
-        
-        // TODO : language, - should test it!
+     
         ret.put("language", mContext.getResources().getConfiguration().locale.getCountry());
         
-        
-
         return ret;
     }
 
