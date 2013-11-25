@@ -1037,7 +1037,7 @@ public class MixpanelAPI {
         	ret.put("networkType", "UNKNOWN");
         }
      
-        ret.put("language", mContext.getResources().getConfiguration().locale.getCountry());
+        ret.put("languageCode", mContext.getResources().getConfiguration().locale.getCountry());
         
         return ret;
     }
