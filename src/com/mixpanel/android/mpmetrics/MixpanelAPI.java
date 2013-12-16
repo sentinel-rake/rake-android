@@ -1211,8 +1211,8 @@ public class MixpanelAPI {
 		ret.put("languageCode", mContext.getResources().getConfiguration().locale.getCountry());
 		
 		// MDN
-		String permission = "android.permission.READ_PHONE_STATE";
-	    int res = this.mContext.checkCallingOrSelfPermission(permission);
+//		String permission = "android.permission.READ_PHONE_STATE";
+	    int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
 	    if (res == PackageManager.PERMISSION_GRANTED){	    	
 	    	TelephonyManager tMgr =(TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
 	    	String MDN = tMgr.getLine1Number();
@@ -1226,6 +1226,14 @@ public class MixpanelAPI {
 		
 		
 		// Location
+//	    res = this.mContext.checkCallingOrSelfPermission("android.permission.ACCESS_FINE_LOCATION");
+//	    if (res == PackageManager.PERMISSION_GRANTED){	    	
+//
+//	    	ret.put("location", );
+//	    }else{
+//	    	ret.put("location", "NO PERMISSION");
+//	    }
+//		
 
 		return ret;
 	}
