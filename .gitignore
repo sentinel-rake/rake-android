@@ -4,4 +4,4 @@ gen
 docs
 demo/Hello Mixpanel/libs/
 test/libs/
-Mixpanel*-rake-*.jar
+./Mixpanel*-rake-*.jar
