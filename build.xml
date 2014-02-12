@@ -2,20 +2,20 @@
 <project name="MixpanelAPI">
     <property name="version" value="3.3.0.1"/>
     <property name="rake-version" value="0.5.0"/>
-    <property name="client-version" value="0.1.2"/>
-	  
+    <property name="client-version" value="0.1.3"/>
+
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
-    <property file="local.properties" />
+    <property file="local.properties"/>
 
     <!-- if sdk.dir was not set from one of the property file, then
          get it from the ANDROID_HOME env var.
          This must be done before we load project.properties since
          the proguard config can use sdk.dir -->
-    <property environment="env" />
+    <property environment="env"/>
     <condition property="sdk.dir" value="${env.ANDROID_HOME}">
-        <isset property="env.ANDROID_HOME" />
+        <isset property="env.ANDROID_HOME"/>
     </condition>
 
     <!-- The project.properties file is created and updated by the 'android'
@@ -27,37 +27,38 @@
 
          This file is an integral part of the build system for your
          application and should be checked into Version Control Systems. -->
-    <loadproperties srcFile="project.properties" />
+    <loadproperties srcFile="project.properties"/>
 
     <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project' or to inject it through the ANDROID_HOME environment variable."
             unless="sdk.dir"
-    />
+            />
 
 
     <!-- These properties are copied pretty directly from
          $ANDROID_HOME/tools/ant/build.xml -->
-    <property name="source.dir" value="src" />
-    <property name="lib.dir" value="libs" />
-    <property name="source.absolute.dir" location="${source.dir}" />
-    <property name="docs.dir" value="docs" />
-    <property name="docs.absolute.dir" location="${docs.dir}" />
-    <property name="out.dir" value="bin" />
-    <property name="out.absolute.dir" location="${out.dir}" />
-    <property name="out.classes.absolute.dir" location="${out.dir}/classes" />
-    <property name="demo.dir" value="demo/Hello Mixpanel" />
-    <property name="demo.libs.dir" value="${demo.dir}/libs" />
-    <property name="demo.absolute.libs.dir" location="${demo.libs.dir}" />
-    <property name="test.dir" value="test" />
-    <property name="test.libs.dir" value="${test.dir}/libs" />
-    <property name="test.absolute.libs.dir" location="${test.libs.dir}" />
+    <property name="source.dir" value="src"/>
+    <property name="lib.dir" value="libs"/>
+    <property name="source.absolute.dir" location="${source.dir}"/>
+    <property name="docs.dir" value="docs"/>
+    <property name="docs.absolute.dir" location="${docs.dir}"/>
+    <property name="out.dir" value="bin"/>
+    <property name="out.absolute.dir" location="${out.dir}"/>
+    <property name="out.classes.absolute.dir" location="${out.dir}/classes"/>
+    <property name="demo.dir" value="demo/Hello Mixpanel"/>
+    <property name="demo.libs.dir" value="${demo.dir}/libs"/>
+    <property name="demo.absolute.libs.dir" location="${demo.libs.dir}"/>
+    <property name="test.dir" value="test"/>
+    <property name="test.libs.dir" value="${test.dir}/libs"/>
+    <property name="test.absolute.libs.dir" location="${test.libs.dir}"/>
+    <property name="release.dir" value="release/jar"/>
 
     <!-- compilation options -->
-    <property name="java.encoding" value="UTF-8" />
-    <property name="java.target" value="1.5" />
-    <property name="java.source" value="1.5" />
-    <property name="java.compilerargs" value="" />
+    <property name="java.encoding" value="UTF-8"/>
+    <property name="java.target" value="1.5"/>
+    <property name="java.source" value="1.5"/>
+    <property name="java.compilerargs" value=""/>
 
     <!-- whether we need to fork javac.
          This is only needed on Windows when running Java < 7 -->
@@ -70,70 +71,73 @@
         </and>
     </condition>
 
-    <echo message = "target : ${target}"/>
+    <echo message="target : ${target}"/>
     <path id="project.javac.classpath">
-      <pathelement path="${sdk.dir}/tools/support/annotations.jar" />
-      <pathelement path="${sdk.dir}/platforms/${target}/android.jar" />
-      <pathelement path="libs/JSnappy-0.9.1.jar" />
+        <pathelement path="${sdk.dir}/tools/support/annotations.jar"/>
+        <pathelement path="${sdk.dir}/platforms/${target}/android.jar"/>
+        <pathelement path="libs/JSnappy-0.9.1.jar"/>
     </path>
 
     <target name="clean">
-      <delete dir="${out.absolute.dir}" />
-      <delete dir="${docs.absolute.dir}" />
+        <delete dir="${out.absolute.dir}"/>
+        <delete dir="${docs.absolute.dir}"/>
     </target>
 
     <target name="-setup">
-      <mkdir dir="${out.absolute.dir}" />
-      <mkdir dir="${out.classes.absolute.dir}" />
+        <mkdir dir="${out.absolute.dir}"/>
+        <mkdir dir="${out.classes.absolute.dir}"/>
     </target>
 
     <target name="compile" depends="-setup">
-      <!-- TODO unset debug="true" -->
+        <!-- TODO unset debug="true" -->
 
-      <javac encoding="${java.encoding}"
-             source="${java.source}" target="${java.target}"
-             debug="true"
-             extdirs=""
-             includeantruntime="false"
-             destdir="${out.classes.absolute.dir}"
-             classpathref="project.javac.classpath"
-             verbose="false"
-             fork="${need.javac.fork}">
-        <src path="${source.absolute.dir}" />
-        <compilerarg line="${java.compilerargs}" />
-      </javac>
+        <javac encoding="${java.encoding}"
+               source="${java.source}" target="${java.target}"
+               debug="true"
+               extdirs=""
+               includeantruntime="false"
+               destdir="${out.classes.absolute.dir}"
+               classpathref="project.javac.classpath"
+               verbose="false"
+               fork="${need.javac.fork}">
+            <src path="${source.absolute.dir}"/>
+            <compilerarg line="${java.compilerargs}"/>
+        </javac>
     </target>
 
-    
-	<script language="javascript">
-    	var target = project.getProperty("target");
-    	project.setProperty("target", target.replaceAll("android-", ""));
-		</script>
-	<echo>target=${target}</echo>
-    
-	
+
+    <script language="javascript">
+        var target = project.getProperty("target");
+        project.setProperty("target", target.replaceAll("android-", ""));
+    </script>
+    <echo>target=${target}</echo>
+
+
     <target name="library" depends="compile">
-        <property name="targetFile" value="MixpanelAPI${target}-${version}-rake-${rake-version}-client-${client-version}.jar"/>
-        <jar destfile="${targetFile}" basedir="${out.classes.absolute.dir}" includes="**/*.class" >
+        <property name="targetFile"
+                  value="MixpanelAPI${target}-${version}-rake-${rake-version}-client-${client-version}.jar"/>
+        <jar destfile="${targetFile}" basedir="${out.classes.absolute.dir}" includes="**/*.class">
             <zipgroupfileset dir="libs" includes="*.jar"/>
         </jar>
-       <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar" />
+        <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar"/>
+        <copy file="${targetFile}" tofile="${release.dir}/MixpanelAPI.jar"/>
+        <copy file="${targetFile}" tofile="${release.dir}/${targetFile}"/>
     </target>
 
     <target name="docs">
-      <javadoc packagenames="com.mixpanel.android.mpmetrics"
-               sourcepath="src"
-               defaultexcludes="yes"
-               destdir="${docs.absolute.dir}"
-               author="true"
-               version="true"
-               classpathref="project.javac.classpath"
-               linkoffline="http://d.android.com/reference ${sdk.dir}/docs/reference"
-               use="true">
-        <fileset dir="." defaultexcludes="yes">
-          <include name="*/src/com/mixpanel/android/mpmetrics/MixpanelAPI.java"/>
-        </fileset>
-      </javadoc>
+        <javadoc packagenames="com.mixpanel.android.mpmetrics"
+                 sourcepath="src"
+                 defaultexcludes="yes"
+                 destdir="${docs.absolute.dir}"
+                 author="true"
+                 version="true"
+                 classpathref="project.javac.classpath"
+                 linkoffline="http://d.android.com/reference ${sdk.dir}/docs/reference"
+                 use="true">
+            <fileset dir="." defaultexcludes="yes">
+                <include name="*/src/com/mixpanel/android/mpmetrics/MixpanelAPI.java"/>
+            </fileset>
+        </javadoc>
     </target>
 
 </project>
