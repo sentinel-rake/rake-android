@@ -2,14 +2,11 @@ package com.mixpanel.android.mpmetrics;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
+import android.os.StrictMode;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,7 +99,7 @@ import android.util.Log;
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
     public static final String RAKE_VERSION = "0.5.0";
-    public static final String CLIENT_VERSION = "0.2.0";    // validation!!
+    public static final String CLIENT_VERSION = "0.2.1";    // validation!!
 
     private boolean isDevServer = false;
 
@@ -277,8 +274,10 @@ public class MixpanelAPI {
      *                   to include in this event. Pass null if no extra properties
      *                   exist.
      */
-      public void track(JSONObject properties) {
-        if (MPConfig.DEBUG)
+    public void track(JSONObject properties) {
+        if (MPConfig.DEBUG) {
+            Log.d(LOGTAG, "track ");
+        }
 
         try {
             // long time = System.currentTimeMillis() / 1000;
@@ -297,6 +296,7 @@ public class MixpanelAPI {
             dataObj.put("baseTime", baseTime);
             dataObj.put("localTime", localTime);
 
+
             JSONObject propertiesObj = getDefaultEventProperties();
 
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
@@ -311,11 +311,46 @@ public class MixpanelAPI {
                 }
             }
 
+            propertiesObj.put("baseTime", baseTime);
+            propertiesObj.put("localTime", localTime);
+
             dataObj.put("properties", propertiesObj);
 
-            if(this.isDevServer){
+            if (properties.has("_$ssToken")) {
+                if (this.isDevServer) {
+//                    Log.i("Mixpanel ssToken", properties.toString());
+                    // Do Validation here
+                    // Server : http://sentinel.skplanet.co.kr:8080
 
+                    String defaultServer = "http://10.202.210.244:8080";
+                    String fallBackServer = "http://10.202.210.244:8080";
+
+                    // args : String rawMessage, String endpointPath
+                    HttpPoster httpPoster = new HttpPoster(defaultServer, fallBackServer);
+
+                    HttpPoster.PostResult postResult;
+                    // TODO : threading
+                    if(android.os.Build.VERSION.SDK_INT > 9) {
+
+                        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+                        StrictMode.setThreadPolicy(policy);
+
+                    }
+
+                    // properties -> sentinelValidator
+
+                    postResult = httpPoster.postHttpValidationRequest(properties, "/validator/remote.json");
+
+
+                    return;
+                } else {
+//                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
+//                    Log.i("Mixpanel Normal data", dataObj.toString());
+//                    return;
+                }
             }
+
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {

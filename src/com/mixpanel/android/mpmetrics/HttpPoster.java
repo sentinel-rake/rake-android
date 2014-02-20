@@ -1,6 +1,7 @@
 package com.mixpanel.android.mpmetrics;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
@@ -18,11 +19,16 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.net.ssl.SSLSocket;
+
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 
@@ -48,6 +54,7 @@ import com.mixpanel.android.util.StringUtils;
 import de.jarnbjo.jsnappy.SnappyCompressor;
 import de.jarnbjo.jsnappy.SnappyDecompressor;
 import de.jarnbjo.jsnappy.Buffer;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 
@@ -68,7 +75,9 @@ import java.util.Arrays;
         // The post itself is bad/unsendable (for example, too big for system memory)
         // and shouldn't be retried.
         FAILED_UNRECOVERABLE
-    };
+    }
+
+    ;
 
     public HttpPoster(String defaultHost, String fallbackHost) {
         mDefaultHost = defaultHost;
@@ -82,15 +91,15 @@ import java.util.Arrays;
         String compress = null;
 
         Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
-        if(rawMessage.length() > compressedBuffer.getLength()){
+        if (rawMessage.length() > compressedBuffer.getLength()) {
             compress = "snappy";
             encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
-        }else{
+        } else {
             compress = "plain";
             encodedData = Base64Coder.encodeString(rawMessage);
         }
 
-        nameValuePairs.add(new BasicNameValuePair("compress",compress));
+        nameValuePairs.add(new BasicNameValuePair("compress", compress));
         nameValuePairs.add(new BasicNameValuePair("data", encodedData));
 
         String defaultUrl = mDefaultHost + endpointPath;
@@ -105,36 +114,78 @@ import java.util.Arrays;
         return ret;
     }
 
+    public PostResult postHttpValidationRequest(JSONObject jsonObject, String endpointPath) {
+
+        String defaultUrl = mDefaultHost + endpointPath;
+
+        Log.d("postHttpValidationRequest", defaultUrl);
+
+
+        PostResult ret = PostResult.FAILED_UNRECOVERABLE;
+
+        HttpParams params = setParamsTimeout();
+        HttpClient httpclient = new DefaultHttpClient(params);
+
+
+        HttpPost httppost = new HttpPost(defaultUrl);
+        httppost.setHeader("Accept", "application/json");
+        httppost.setHeader("Content-type", "application/json");
+//        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+//        nameValuePairs.add(new BasicNameValuePair("data", jsonObject.toString()));
+
+
+        try {
+            StringEntity se = new StringEntity(jsonObject.toString());
+            httppost.setEntity(se);
+
+//            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+//            ResponseHandler responseHandler = new BasicResponseHandler();
+            HttpResponse response = httpclient.execute(httppost);//, responseHandler);
+            HttpEntity entity = response.getEntity();
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+
     // by lons
     public HttpParams setParamsTimeout() {
-    	HttpParams httpParameters = new BasicHttpParams();
-    	int timeoutConnection = 3000;
+        HttpParams httpParameters = new BasicHttpParams();
+        int timeoutConnection = 3000;
         HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
         int timeoutSocket = 120000;
         HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
         return httpParameters;
     }
-    
+
+
     private PostResult postHttpRequest(String endpointUrl, List<NameValuePair> nameValuePairs) {
         PostResult ret = PostResult.FAILED_UNRECOVERABLE;
-        
+
         HttpParams params = setParamsTimeout();
         HttpClient httpclient = new DefaultHttpClient(params);
 
         //LONS: 
-        if(endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
-        	//Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
-        	httpclient = sslClientDebug(httpclient);
+        if (endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
+            //Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
+            httpclient = sslClientDebug(httpclient);
         } else {
-        	//Log.d(LOGTAG, "original https client used");	
-        }        
-        
+            //Log.d(LOGTAG, "original https client used");
+        }
+
         HttpPost httppost = new HttpPost(endpointUrl);
 
         try {
-
-            String urlEncoded = StringUtils.inputStreamToString(new UrlEncodedFormEntity(nameValuePairs).getContent());
+//            String urlEncoded = StringUtils.inputStreamToString(new UrlEncodedFormEntity(nameValuePairs).getContent());
             httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
 
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
@@ -143,7 +194,7 @@ import java.util.Arrays;
                 String result = StringUtils.inputStreamToString(entity.getContent());
                 if (result.equals("1\n")) {
                     ret = PostResult.SUCCEEDED;
-                } 
+                }
             }
         } catch (IOException e) {
             Log.i(LOGTAG, "Cannot post message to Mixpanel Servers (May Retry)", e);
@@ -156,10 +207,10 @@ import java.util.Arrays;
         return ret;
     }
 
-    
+
     private HttpClient sslClientDebug(HttpClient client) {
         try {
-            X509TrustManager tm = new X509TrustManager() { 
+            X509TrustManager tm = new X509TrustManager() {
                 public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
                 }
 
@@ -182,6 +233,7 @@ import java.util.Arrays;
             return null;
         }
     }
+
     public class MySSLSocketFactory extends SSLSocketFactory {
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
@@ -200,12 +252,12 @@ import java.util.Arrays;
                 }
             };
 
-            sslContext.init(null, new TrustManager[] { tm }, null);
+            sslContext.init(null, new TrustManager[]{tm}, null);
         }
 
         public MySSLSocketFactory(SSLContext context) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
-           super(null);
-           sslContext = context;
+            super(null);
+            sslContext = context;
         }
 
         @Override
@@ -217,5 +269,5 @@ import java.util.Arrays;
         public Socket createSocket() throws IOException {
             return sslContext.getSocketFactory().createSocket();
         }
-   }
+    }
 }
