@@ -4,7 +4,8 @@ package com.mixpanel.android.mpmetrics;
  * Stores global configuration options for the Mixpanel library.
  * May be overridden to achieve custom behavior.
  */
-/* package */ class MPConfig {
+/* package */
+public class MPConfig {
     // When we've reached this many track calls, flush immediately
     public static final int BULK_UPLOAD_LIMIT = 40;
 
@@ -45,5 +46,8 @@ package com.mixpanel.android.mpmetrics;
     // LONS
     public static int CONNECTION_TIMEOUT = 5000;
     public static int SO_TIMEOUT = 5000;
+
+
+    public static String SENTINEL_REMOTE_SERVER = "http://10.202.31.65:8080";
     
 }

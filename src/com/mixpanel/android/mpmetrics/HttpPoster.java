@@ -58,7 +58,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
-/* package */ class HttpPoster {
+/* package */ public class HttpPoster {
 
     private static final String LOGTAG = "MixpanelAPI";
     private final String mDefaultHost;
@@ -114,7 +114,7 @@ import java.util.Arrays;
         return ret;
     }
 
-    public PostResult postHttpValidationRequest(JSONObject jsonObject, String endpointPath) {
+    public PostResult postHttpValidationRequest(String log, String schemaId, String ssToken, String endpointPath) {
 
         String defaultUrl = mDefaultHost + endpointPath;
 
@@ -134,13 +134,20 @@ import java.util.Arrays;
 //        nameValuePairs.add(new BasicNameValuePair("data", jsonObject.toString()));
 
 
+        JSONObject valObj = new JSONObject();
+
         try {
-            StringEntity se = new StringEntity(jsonObject.toString());
+            valObj.put("log", log);
+            valObj.put("_$schemaId", schemaId);
+            valObj.put("_$ssToken", ssToken);
+        } catch (Exception e) {
+
+        }
+
+        try {
+            StringEntity se = new StringEntity(valObj.toString());
             httppost.setEntity(se);
 
-//            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-//            ResponseHandler responseHandler = new BasicResponseHandler();
             HttpResponse response = httpclient.execute(httppost);//, responseHandler);
             HttpEntity entity = response.getEntity();
 

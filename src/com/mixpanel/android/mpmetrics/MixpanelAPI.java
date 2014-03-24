@@ -1,16 +1,5 @@
 package com.mixpanel.android.mpmetrics;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import android.os.StrictMode;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +9,14 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import com.skplanet.pdp.sentinel.validator.SentinelLogValidatorAsyncTask;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Core class for interacting with Mixpanel Analytics.
@@ -99,9 +96,12 @@ import android.util.Log;
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
     public static final String RAKE_VERSION = "0.5.0";
-    public static final String CLIENT_VERSION = "0.2.1";    // validation!!
+    public static final String CLIENT_VERSION = "0.3.0";
 
     private boolean isDevServer = false;
+
+    private SimpleDateFormat baseTimeFormat;
+    private SimpleDateFormat localTimeFormat;
 
     /**
      * You shouldn't instantiate MixpanelAPI objects directly. Use
@@ -121,6 +121,11 @@ public class MixpanelAPI {
                 Context.MODE_PRIVATE);
         readSuperProperties();
         // readIdentities();
+
+        baseTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        baseTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+
+        localTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
     }
 
     /**
@@ -270,6 +275,25 @@ public class MixpanelAPI {
      * create your Mixpanel reports. Events have a string name, and an optional
      * set of name/value pairs that describe the properties of that event.
      *
+     * @param event      We don't use it anymore
+     * @param properties A JSONObject containing the key value pairs of the properties
+     *                   to include in this event. Pass null if no extra properties
+     *                   exist.
+     */
+    @Deprecated
+    public void track(String event, JSONObject properties) {
+        track(properties);
+    }
+
+    /**
+     * Track
+     * <p/>
+     * <p/>
+     * Every call to track eventually results in a data point sent to Mixpanel.
+     * These data points are what are measured, counted, and broken down to
+     * create your Mixpanel reports. Events have a string name, and an optional
+     * set of name/value pairs that describe the properties of that event.
+     *
      * @param properties A JSONObject containing the key value pairs of the properties
      *                   to include in this event. Pass null if no extra properties
      *                   exist.
@@ -280,15 +304,9 @@ public class MixpanelAPI {
         }
 
         try {
-            // long time = System.currentTimeMillis() / 1000;
             Date now = new Date();
-            SimpleDateFormat baseTimeFormat = new SimpleDateFormat(
-                    "yyyyMMddHHmmssSSS");
-            baseTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-            String baseTime = baseTimeFormat.format(now);
 
-            SimpleDateFormat localTimeFormat = new SimpleDateFormat(
-                    "yyyyMMddHHmmssSSS");
+            String baseTime = baseTimeFormat.format(now);
             String localTime = localTimeFormat.format(now);
 
             JSONObject dataObj = new JSONObject();
@@ -297,13 +315,16 @@ public class MixpanelAPI {
             dataObj.put("localTime", localTime);
 
 
-            JSONObject propertiesObj = getDefaultEventProperties();
+            JSONObject propertiesObj = new JSONObject();
 
+
+            // set superProperties
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
+            // set user's custom properties
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
@@ -311,44 +332,50 @@ public class MixpanelAPI {
                 }
             }
 
+            // overwrite default properties
+            JSONObject defaultProperties = getDefaultEventProperties();
+            if (defaultProperties != null) {
+                for (Iterator<?> iter = defaultProperties.keys(); iter.hasNext(); ) {
+                    String key = (String) iter.next();
+                    propertiesObj.put(key, defaultProperties.get(key));
+                }
+            }
+
             propertiesObj.put("baseTime", baseTime);
             propertiesObj.put("localTime", localTime);
 
+            // set dataObj
             dataObj.put("properties", propertiesObj);
 
             if (properties.has("_$ssToken")) {
                 if (this.isDevServer) {
-//                    Log.i("Mixpanel ssToken", properties.toString());
-                    // Do Validation here
-                    // Server : http://sentinel.skplanet.co.kr:8080
 
-                    String defaultServer = "http://10.202.210.244:8080";
-                    String fallBackServer = "http://10.202.210.244:8080";
+                    StringBuilder log = new StringBuilder();
+                    Log.d("fullLog", propertiesObj.toString());
 
-                    // args : String rawMessage, String endpointPath
-                    HttpPoster httpPoster = new HttpPoster(defaultServer, fallBackServer);
+                    JSONArray schemaOrder = propertiesObj.getJSONArray("_$ssSchemaOrder");
+                    String schemaId = (String) propertiesObj.get("_$ssSchemaId");
+                    String ssToken = (String) propertiesObj.get("_$ssToken");
 
-                    HttpPoster.PostResult postResult;
-                    // TODO : threading
-                    if(android.os.Build.VERSION.SDK_INT > 9) {
+                    for (int i = 0; i < schemaOrder.length(); i++) {
+                        log.append(propertiesObj.get(schemaOrder.get(i).toString()).toString()).append('\t');
+                    }
+                    log.deleteCharAt(log.length() - 1);
 
-                        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
-                        StrictMode.setThreadPolicy(policy);
-
+                    if (propertiesObj.has("body")) {
+                        log.append('\t').append(propertiesObj.get("body").toString());
                     }
 
-                    // properties -> sentinelValidator
+                    Log.d("fullLog String : ", log.toString());
 
-                    postResult = httpPoster.postHttpValidationRequest(properties, "/validator/remote.json");
-
-
+                    new SentinelLogValidatorAsyncTask().execute(log.toString(), schemaId, ssToken);
                     return;
-                } else {
-//                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
-//                    Log.i("Mixpanel Normal data", dataObj.toString());
-//                    return;
                 }
+                ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
+                ((JSONObject) (dataObj.get("properties"))).remove("_$ssVersion");
+                ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
+            } else {
+                // nothing have to do
             }
 
 
@@ -1180,12 +1207,12 @@ public class MixpanelAPI {
         // ret.put("appRelease", "UNKNOWN");
         // }
 
-        Boolean hasNFC = mSystemInformation.hasNFC();
-        if (null != hasNFC) {
-            ret.put("hasNfc", hasNFC.booleanValue());
-        } else {
-            ret.put("hasNfc", "UNKNOWN");
-        }
+//        Boolean hasNFC = mSystemInformation.hasNFC();
+//        if (null != hasNFC) {
+//            ret.put("hasNfc", hasNFC.booleanValue());
+//        } else {
+//            ret.put("hasNfc", "UNKNOWN");
+//        }
 
         // Boolean hasTelephony = mSystemInformation.hasTelephony();
         // if (null != hasTelephony){
@@ -1216,28 +1243,19 @@ public class MixpanelAPI {
 
         // MDN
 //		String permission = "android.permission.READ_PHONE_STATE";
-        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-        if (res == PackageManager.PERMISSION_GRANTED) {
-            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String MDN = tMgr.getLine1Number();
-            if (MDN == null) {
-                MDN = "";
-            }
-            ret.put("MDN", MDN);
-        } else {
-            ret.put("MDN", "NO PERMISSION");
-        }
 
+//        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
+//        if (res == PackageManager.PERMISSION_GRANTED) {
+//            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+//            String MDN = tMgr.getLine1Number();
+//            if (MDN == null) {
+//                MDN = "";
+//            }
+//            ret.put("MDN", MDN);
+//        } else {
+//            ret.put("MDN", "NO PERMISSION");
+//        }
 
-        // Location
-//	    res = this.mContext.checkCallingOrSelfPermission("android.permission.ACCESS_FINE_LOCATION");
-//	    if (res == PackageManager.PERMISSION_GRANTED){	    	
-//
-//	    	ret.put("location", );
-//	    }else{
-//	    	ret.put("location", "NO PERMISSION");
-//	    }
-//		
 
         return ret;
     }

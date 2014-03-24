@@ -4,6 +4,8 @@
       <root url="jar://$USER_HOME$/Downloads/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-19/android.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$USER_HOME$/Downloads/adt-bundle-mac-x86_64-20130522/sdk/sources/android-19" />
+    </SOURCES>
   </library>
 </component>
