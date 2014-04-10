@@ -16,17 +16,16 @@ import android.util.Log;
 
 /**
  * SQLite database adapter for MixpanelAPI.
- *
+ * <p/>
  * <p>Not thread-safe. Instances of this class should only be used
  * by a single thread.
- *
  */
 class MPDbAdapter {
     private static final String LOGTAG = "MixpanelAPI";
 
     public enum Table {
-        EVENTS ("events"),
-        PEOPLE ("people");
+        EVENTS("events"),
+        PEOPLE("people");
 
         Table(String name) {
             mTableName = name;
@@ -46,19 +45,19 @@ class MPDbAdapter {
     public static final String KEY_CREATED_AT = "created_at";
 
     private static final String CREATE_EVENTS_TABLE =
-       "CREATE TABLE " + Table.EVENTS.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        KEY_DATA + " STRING NOT NULL, " +
-        KEY_CREATED_AT + " INTEGER NOT NULL);";
+            "CREATE TABLE " + Table.EVENTS.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    KEY_DATA + " STRING NOT NULL, " +
+                    KEY_CREATED_AT + " INTEGER NOT NULL);";
     private static final String CREATE_PEOPLE_TABLE =
-       "CREATE TABLE " + Table.PEOPLE.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        KEY_DATA + " STRING NOT NULL, " +
-        KEY_CREATED_AT + " INTEGER NOT NULL);";
+            "CREATE TABLE " + Table.PEOPLE.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    KEY_DATA + " STRING NOT NULL, " +
+                    KEY_CREATED_AT + " INTEGER NOT NULL);";
     private static final String EVENTS_TIME_INDEX =
-        "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.EVENTS.getName() +
-        " (" + KEY_CREATED_AT + ");";
+            "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.EVENTS.getName() +
+                    " (" + KEY_CREATED_AT + ");";
     private static final String PEOPLE_TIME_INDEX =
-        "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.PEOPLE.getName() +
-        " (" + KEY_CREATED_AT + ");";
+            "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.PEOPLE.getName() +
+                    " (" + KEY_CREATED_AT + ");";
 
     private final MPDatabaseHelper mDb;
 
@@ -106,7 +105,8 @@ class MPDbAdapter {
     }
 
     public MPDbAdapter(Context context, String dbName) {
-        if (MPConfig.DEBUG) Log.d(LOGTAG, "Mixpanel Database (" + dbName + ") adapter constructed in context " + context);
+        if (MPConfig.DEBUG)
+            Log.d(LOGTAG, "Mixpanel Database (" + dbName + ") adapter constructed in context " + context);
 
         mDb = new MPDatabaseHelper(context, dbName);
     }
@@ -114,13 +114,16 @@ class MPDbAdapter {
     /**
      * Adds a JSON string representing an event with properties or a person record
      * to the SQLiteDatabase.
-     * @param j the JSON to record
+     *
+     * @param j     the JSON to record
      * @param table the table to insert into, either "events" or "people"
      * @return the number of rows in the table, or -1 on failure
      */
     public int addJSON(JSONObject j, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) { Log.d(LOGTAG, "addJSON " + tableName); }
+        if (MPConfig.DEBUG) {
+            Log.d(LOGTAG, "addJSON " + tableName);
+        }
 
         Cursor c = null;
         int count = -1;
@@ -155,12 +158,15 @@ class MPDbAdapter {
 
     /**
      * Removes events with an _id <= last_id from table
+     *
      * @param last_id the last id to delete
-     * @param table the table to remove events from, either "events" or "people"
+     * @param table   the table to remove events from, either "events" or "people"
      */
     public void cleanupEvents(String last_id, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) { Log.d(LOGTAG, "cleanupEvents _id " + last_id + " from table " + tableName); }
+        if (MPConfig.DEBUG) {
+            Log.d(LOGTAG, "cleanupEvents _id " + last_id + " from table " + tableName);
+        }
 
         try {
             SQLiteDatabase db = mDb.getWritableDatabase();
@@ -180,12 +186,15 @@ class MPDbAdapter {
 
     /**
      * Removes events before time.
-     * @param time the unix epoch in milliseconds to remove events before
+     *
+     * @param time  the unix epoch in milliseconds to remove events before
      * @param table the table to remove events from, either "events" or "people"
      */
     public void cleanupEvents(long time, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) { Log.d(LOGTAG, "cleanupEvents time " + time + " from table " + tableName); }
+        if (MPConfig.DEBUG) {
+            Log.d(LOGTAG, "cleanupEvents time " + time + " from table " + tableName);
+        }
 
         try {
             SQLiteDatabase db = mDb.getWritableDatabase();
@@ -224,7 +233,7 @@ class MPDbAdapter {
 
         try {
             SQLiteDatabase db = mDb.getReadableDatabase();
-            c = db.rawQuery("SELECT * FROM " + tableName  +
+            c = db.rawQuery("SELECT * FROM " + tableName +
                     " ORDER BY " + KEY_CREATED_AT + " ASC LIMIT 50", null);
             JSONArray arr = new JSONArray();
 

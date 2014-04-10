@@ -22,7 +22,7 @@ public class MPConfig {
     //public static final String BASE_ENDPOINT = "https://api.mixpanel.com";
     //public static String BASE_ENDPOINT = "https://10.200.116.69:8443/log";
     public static String BASE_ENDPOINT = "https://rake.skplanet.com:8443/log";
-//    public static String DEV_BASE_ENDPOINT = "http://172.19.114.160:8000/log/";
+    //    public static String DEV_BASE_ENDPOINT = "http://172.19.114.160:8000/log/";
     public static String DEV_BASE_ENDPOINT = "http://dev.rake.skplanet.com:8000/log/";
 //    public static String DEV_BASE_ENDPOINT = "http://1.234.62.198:7100/log/";    
 
@@ -41,7 +41,7 @@ public class MPConfig {
     // This should be set to false in production builds
     // LONS
     public static boolean DEBUG = false;
-    
+
     // LONS
     public static boolean TRUSTED_SERVER = false;
     // LONS
@@ -51,5 +51,5 @@ public class MPConfig {
 
     public static String SENTINEL_REMOTE_SERVER = "http://211.110.43.80:8080";
 //    public static String SENTINEL_REMOTE_SERVER = "http://sentinel.skplanet.co.kr:8080";
-    
+
 }

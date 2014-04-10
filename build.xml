@@ -46,9 +46,6 @@
     <property name="out.dir" value="bin"/>
     <property name="out.absolute.dir" location="${out.dir}"/>
     <property name="out.classes.absolute.dir" location="${out.dir}/classes"/>
-    <property name="demo.dir" value="demo/Hello Mixpanel"/>
-    <property name="demo.libs.dir" value="${demo.dir}/libs"/>
-    <property name="demo.absolute.libs.dir" location="${demo.libs.dir}"/>
     <property name="test.dir" value="test"/>
     <property name="test.libs.dir" value="${test.dir}/libs"/>
     <property name="test.absolute.libs.dir" location="${test.libs.dir}"/>
@@ -121,7 +118,6 @@
         <jar destfile="${targetFile}" basedir="${out.classes.absolute.dir}" includes="**/*.class">
             <zipgroupfileset dir="libs" includes="*.jar"/>
         </jar>
-        <copy file="${targetFile}" tofile="${demo.absolute.libs.dir}/MixpanelAPI.jar"/>
         <copy file="${targetFile}" tofile="${release.dir}/Rake.jar"/>
         <move file="${targetFile}" tofile="${release.dir}/${targetFile}"/>
     </target>

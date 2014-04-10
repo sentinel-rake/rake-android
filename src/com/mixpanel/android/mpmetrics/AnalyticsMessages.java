@@ -16,7 +16,7 @@ import android.util.Log;
 
 /**
  * Manage communication of events with the internal database and the Mixpanel servers.
- *
+ * <p/>
  * <p>This class straddles the thread boundary between user threads and
  * a logical Mixpanel thread.
  */
@@ -35,19 +35,19 @@ import android.util.Log;
      * for yourself.
      *
      * @param messageContext should be the Main Activity of the application
-     *     associated with these messages.
+     *                       associated with these messages.
      */
     public static AnalyticsMessages getInstance(Context messageContext) {
         synchronized (sInstances) {
             Context appContext = messageContext.getApplicationContext();
             AnalyticsMessages ret;
-            if (! sInstances.containsKey(appContext)) {
+            if (!sInstances.containsKey(appContext)) {
                 if (MPConfig.DEBUG) Log.d(LOGTAG, "Constructing new AnalyticsMessages for Context " + appContext);
                 ret = new AnalyticsMessages(appContext);
                 sInstances.put(appContext, ret);
-            }
-            else {
-                if (MPConfig.DEBUG) Log.d(LOGTAG, "AnalyticsMessages for Context " + appContext + " already exists- returning");
+            } else {
+                if (MPConfig.DEBUG)
+                    Log.d(LOGTAG, "AnalyticsMessages for Context " + appContext + " already exists- returning");
                 ret = sInstances.get(appContext);
             }
             return ret;
@@ -145,7 +145,7 @@ import android.util.Log;
         }
 
         public boolean isDead() {
-            synchronized(mHandlerLock) {
+            synchronized (mHandlerLock) {
                 return mHandler == null;
             }
         }
@@ -154,9 +154,8 @@ import android.util.Log;
             if (isDead()) {
                 // We died under suspicious circumstances. Don't try to send any more events.
                 logAboutMessageToMixpanel("Dead mixpanel worker dropping a message: " + msg);
-            }
-            else {
-                synchronized(mHandlerLock) {
+            } else {
+                synchronized (mHandlerLock) {
                     if (mHandler != null) mHandler.sendMessage(msg);
                 }
             }
@@ -220,39 +219,33 @@ import android.util.Log;
                         logAboutMessageToMixpanel("Changing flush interval to " + newIntervalObj);
                         mFlushInterval = newIntervalObj.longValue();
                         removeMessages(FLUSH_QUEUE);
-                    }
-                    else if (msg.what == SET_ENDPOINT_HOST) {
+                    } else if (msg.what == SET_ENDPOINT_HOST) {
                         logAboutMessageToMixpanel("Setting endpoint API host to " + mEndpointHost);
                         mEndpointHost = msg.obj == null ? null : msg.obj.toString();
-                    }
-                    else if (msg.what == SET_FALLBACK_HOST) {
+                    } else if (msg.what == SET_FALLBACK_HOST) {
                         logAboutMessageToMixpanel("Setting fallback API host to " + mFallbackHost);
                         mFallbackHost = msg.obj == null ? null : msg.obj.toString();
-                    }
-                    else if (msg.what == ENQUEUE_PEOPLE) {
+                    } else if (msg.what == ENQUEUE_PEOPLE) {
                         JSONObject message = (JSONObject) msg.obj;
 
                         logAboutMessageToMixpanel("Queuing people record for sending later");
                         logAboutMessageToMixpanel("    " + message.toString());
 
                         queueDepth = mDbAdapter.addJSON(message, MPDbAdapter.Table.PEOPLE);
-                    }
-                    else if (msg.what == ENQUEUE_EVENTS) {
+                    } else if (msg.what == ENQUEUE_EVENTS) {
                         JSONObject message = (JSONObject) msg.obj;
 
                         logAboutMessageToMixpanel("Queuing event for sending later");
                         logAboutMessageToMixpanel("    " + message.toString());
 
                         queueDepth = mDbAdapter.addJSON(message, MPDbAdapter.Table.EVENTS);
-                    }
-                    else if (msg.what == FLUSH_QUEUE) {
+                    } else if (msg.what == FLUSH_QUEUE) {
                         logAboutMessageToMixpanel("Flushing queue due to scheduled or forced flush");
                         updateFlushFrequency();
                         sendAllData();
-                    }
-                    else if (msg.what == KILL_WORKER) {
+                    } else if (msg.what == KILL_WORKER) {
                         Log.w(LOGTAG, "Worker recieved a hard kill. Dumping all events and force-killing. Thread id " + Thread.currentThread().getId());
-                        synchronized(mHandlerLock) {
+                        synchronized (mHandlerLock) {
                             mDbAdapter.deleteDB();
                             mHandler = null;
                             Looper.myLooper().quit();
@@ -267,8 +260,7 @@ import android.util.Log;
                         logAboutMessageToMixpanel("Flushing queue due to bulk upload limit");
                         updateFlushFrequency();
                         sendAllData();
-                    }
-                    else if(queueDepth > 0) {
+                    } else if (queueDepth > 0) {
                         if (!hasMessages(FLUSH_QUEUE)) {
                             logAboutMessageToMixpanel("Queue depth " + queueDepth + " - Adding flush in " + mFlushInterval);
                             // The hasMessages check is a courtesy for the common case
@@ -313,14 +305,12 @@ import android.util.Log;
                         logAboutMessageToMixpanel("Posted to " + endpointUrl);
                         logAboutMessageToMixpanel("Sent Message\n" + rawMessage);
                         mDbAdapter.cleanupEvents(lastId, table);
-                    }
-                    else if (eventsPosted == HttpPoster.PostResult.FAILED_RECOVERABLE) {
+                    } else if (eventsPosted == HttpPoster.PostResult.FAILED_RECOVERABLE) {
                         // Try again later
                         if (!hasMessages(FLUSH_QUEUE)) {
                             sendEmptyMessageDelayed(FLUSH_QUEUE, mFlushInterval);
                         }
-                    }
-                    else { // give up, we have an unrecoverable failure.
+                    } else { // give up, we have an unrecoverable failure.
                         mDbAdapter.cleanupEvents(lastId, table);
                     }
                 }

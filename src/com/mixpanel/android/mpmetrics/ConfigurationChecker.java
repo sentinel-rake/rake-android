@@ -63,28 +63,28 @@ import android.util.Log;
         }
         // check regular permissions
 
-        if(PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("com.google.android.c2dm.permission.RECEIVE", packageName)) {
+        if (PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("com.google.android.c2dm.permission.RECEIVE", packageName)) {
             Log.w(LOGTAG, "Package does not have permission com.google.android.c2dm.permission.RECEIVE");
             Log.i(LOGTAG, "You can fix this by adding the following to your AndroidManifest.xml file:\n" +
                     "<uses-permission android:name=\"com.google.android.c2dm.permission.RECEIVE\" />");
             return false;
         }
 
-        if(PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.INTERNET", packageName)) {
+        if (PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.INTERNET", packageName)) {
             Log.w(LOGTAG, "Package does not have permission android.permission.INTERNET");
             Log.i(LOGTAG, "You can fix this by adding the following to your AndroidManifest.xml file:\n" +
                     "<uses-permission android:name=\"android.permission.INTERNET\" />");
             return false;
         }
 
-        if(PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.GET_ACCOUNTS", packageName)) {
+        if (PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.GET_ACCOUNTS", packageName)) {
             Log.w(LOGTAG, "Package does not have permission android.permission.GET_ACCOUNTS");
             Log.i(LOGTAG, "You can fix this by adding the following to your AndroidManifest.xml file:\n" +
                     "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\" />");
             return false;
         }
 
-        if(PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.WAKE_LOCK", packageName)) {
+        if (PackageManager.PERMISSION_GRANTED != packageManager.checkPermission("android.permission.WAKE_LOCK", packageName)) {
             Log.w(LOGTAG, "Package does not have permission android.permission.WAKE_LOCK");
             Log.i(LOGTAG, "You can fix this by adding the following to your AndroidManifest.xml file:\n" +
                     "<uses-permission android:name=\"android.permission.WAKE_LOCK\" />");
@@ -103,7 +103,7 @@ import android.util.Log;
         if (receivers == null || receivers.length == 0) {
             Log.w(LOGTAG, "No receiver for package " + packageName);
             Log.i(LOGTAG, "You can fix this with the following into your <application> tag:\n" +
-                            sampleConfigurationMessage(packageName));
+                    sampleConfigurationMessage(packageName));
             return false;
         }
 
@@ -153,13 +153,13 @@ import android.util.Log;
 
     public static String sampleConfigurationMessage(String packageName) {
         return
-        "<receiver android:name=\"com.mixpanel.android.mpmetrics.GCMReceiver\"\n" +
-        "          android:permission=\"com.google.android.c2dm.permission.SEND\" >\n" +
-        "    <intent-filter>\n" +
-        "       <action android:name=\"com.google.android.c2dm.intent.RECEIVE\" />\n" +
-        "       <action android:name=\"com.google.android.c2dm.intent.REGISTRATION\" />\n" +
-        "       <category android:name=\"" + packageName + "\" />\n" +
-        "    </intent-filter>\n" +
-        "</receiver>";
+                "<receiver android:name=\"com.mixpanel.android.mpmetrics.GCMReceiver\"\n" +
+                        "          android:permission=\"com.google.android.c2dm.permission.SEND\" >\n" +
+                        "    <intent-filter>\n" +
+                        "       <action android:name=\"com.google.android.c2dm.intent.RECEIVE\" />\n" +
+                        "       <action android:name=\"com.google.android.c2dm.intent.REGISTRATION\" />\n" +
+                        "       <category android:name=\"" + packageName + "\" />\n" +
+                        "    </intent-filter>\n" +
+                        "</receiver>";
     }
 }

@@ -73,42 +73,54 @@ import android.view.WindowManager;
 
         Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         display.getMetrics(mDisplayMetrics);
-        
+
         mDeviceId = Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
-    public String getDeviceId() { return mDeviceId; }
-    
-    public String getAppVersionName() { return mAppVersionName; }
+    public String getDeviceId() {
+        return mDeviceId;
+    }
 
-    public Integer getAppVersionCode() { return mAppVersionCode; }
+    public String getAppVersionName() {
+        return mAppVersionName;
+    }
 
-    public boolean hasNFC() { return mHasNFC; }
+    public Integer getAppVersionCode() {
+        return mAppVersionCode;
+    }
 
-    public boolean hasTelephony() { return mHasTelephony; }
+    public boolean hasNFC() {
+        return mHasNFC;
+    }
 
-    public DisplayMetrics getDisplayMetrics() { return mDisplayMetrics; }
+    public boolean hasTelephony() {
+        return mHasTelephony;
+    }
+
+    public DisplayMetrics getDisplayMetrics() {
+        return mDisplayMetrics;
+    }
 
     public String getPhoneRadioType() {
         String ret = null;
 
         TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         if (null != telephonyManager) {
-            switch(telephonyManager.getPhoneType()) {
-            case 0x00000000: // TelephonyManager.PHONE_TYPE_NONE
-                ret = "none";
-                break;
-            case 0x00000001: // TelephonyManager.PHONE_TYPE_GSM
-                ret = "gsm";
-                break;
-            case 0x00000002: // TelephonyManager.PHONE_TYPE_CDMA
-                ret = "cdma";
-                break;
-            case 0x00000003: // TelephonyManager.PHONE_TYPE_SIP
-                ret = "sip";
-                break;
-            default:
-                ret = null;
+            switch (telephonyManager.getPhoneType()) {
+                case 0x00000000: // TelephonyManager.PHONE_TYPE_NONE
+                    ret = "none";
+                    break;
+                case 0x00000001: // TelephonyManager.PHONE_TYPE_GSM
+                    ret = "gsm";
+                    break;
+                case 0x00000002: // TelephonyManager.PHONE_TYPE_CDMA
+                    ret = "cdma";
+                    break;
+                case 0x00000003: // TelephonyManager.PHONE_TYPE_SIP
+                    ret = "sip";
+                    break;
+                default:
+                    ret = null;
             }
         }
 

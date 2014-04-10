@@ -22,8 +22,8 @@ import android.util.Log;
     }
 
     public void setOnWaitingPeopleRecord(JSONObject sets)
-        throws JSONException {
-        for(Iterator<?> iter = sets.keys(); iter.hasNext();) {
+            throws JSONException {
+        for (Iterator<?> iter = sets.keys(); iter.hasNext(); ) {
             String key = (String) iter.next();
             Object val = sets.get(key);
 
@@ -31,7 +31,7 @@ import android.util.Log;
             mAdds.remove(key);
 
             List<JSONObject> remainingAppends = new ArrayList<JSONObject>();
-            for (JSONObject nextAppend: remainingAppends) {
+            for (JSONObject nextAppend : remainingAppends) {
                 nextAppend.remove(key);
                 if (nextAppend.length() > 0) {
                     remainingAppends.add(nextAppend);
@@ -44,14 +44,13 @@ import android.util.Log;
     }
 
     public void incrementToWaitingPeopleRecord(Map<String, ? extends Number> adds) {
-        for(String key: adds.keySet()) {
+        for (String key : adds.keySet()) {
             Number oldIncrement = mAdds.get(key);
             Number changeIncrement = adds.get(key);
 
             if ((oldIncrement == null) && (changeIncrement != null)) {
                 mAdds.put(key, changeIncrement.doubleValue());
-            }
-            else if ((oldIncrement != null) && (changeIncrement != null)) {
+            } else if ((oldIncrement != null) && (changeIncrement != null)) {
                 // the result of two increments is the same as the sum of
                 // the increment values
                 mAdds.put(key, oldIncrement.doubleValue() + changeIncrement.doubleValue());
@@ -64,7 +63,7 @@ import android.util.Log;
     }
 
     public void readFromJSONString(String jsonString)
-        throws JSONException {
+            throws JSONException {
         JSONObject stored = new JSONObject(jsonString);
 
         JSONObject newSets = new JSONObject();
@@ -75,7 +74,7 @@ import android.util.Log;
         Map<String, Double> newAdds = new HashMap<String, Double>();
         if (stored.has("$add")) {
             JSONObject addsJSON = stored.getJSONObject("$add");
-            for(Iterator<?> iter = addsJSON.keys(); iter.hasNext();) {
+            for (Iterator<?> iter = addsJSON.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
                 Double amount = addsJSON.getDouble(key);
                 newAdds.put(key, amount);
@@ -83,9 +82,9 @@ import android.util.Log;
         }// if $add is found
 
         List<JSONObject> newAppends = new ArrayList<JSONObject>();
-        if(stored.has("$append")) {
+        if (stored.has("$append")) {
             JSONArray appendsJSON = stored.getJSONArray("$append");
-            for(int i = 0; i < appendsJSON.length(); i++) {
+            for (int i = 0; i < appendsJSON.length(); i++) {
                 JSONObject nextAppend = appendsJSON.getJSONObject(i);
                 newAppends.add(nextAppend);
             }
@@ -101,13 +100,13 @@ import android.util.Log;
 
         try {
             JSONObject addObject = new JSONObject();
-            for(String addKey:mAdds.keySet()) {
+            for (String addKey : mAdds.keySet()) {
                 Double value = mAdds.get(addKey);
                 addObject.put(addKey, value);
             }
 
             JSONArray appendArray = new JSONArray();
-            for(JSONObject append:mAppends) {
+            for (JSONObject append : mAppends) {
                 appendArray.put(append);
             }
 
