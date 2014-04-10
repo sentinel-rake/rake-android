@@ -96,7 +96,7 @@ import java.util.*;
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
     public static final String RAKE_VERSION = "0.5.0";
-    public static final String CLIENT_VERSION = "0.3.1";
+    public static final String CLIENT_VERSION = "0.3.2";
 
     private boolean isDevServer = false;
 
