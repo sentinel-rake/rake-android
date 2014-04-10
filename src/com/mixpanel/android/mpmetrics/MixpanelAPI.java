@@ -96,7 +96,7 @@ import java.util.*;
 public class MixpanelAPI {
     public static final String VERSION = "3.3.0.1";
     public static final String RAKE_VERSION = "0.5.0";
-    public static final String CLIENT_VERSION = "0.3.0";
+    public static final String CLIENT_VERSION = "0.3.1";
 
     private boolean isDevServer = false;
 
@@ -347,6 +347,7 @@ public class MixpanelAPI {
             // set dataObj
             dataObj.put("properties", propertiesObj);
 
+
             if (properties.has("_$ssToken")) {
                 if (this.isDevServer) {
 
@@ -367,17 +368,21 @@ public class MixpanelAPI {
                     }
 
                     Log.d("fullLog String : ", log.toString());
-
                     new SentinelLogValidatorAsyncTask().execute(log.toString(), schemaId, ssToken);
-                    return;
+
                 }
-                ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
-                ((JSONObject) (dataObj.get("properties"))).remove("_$ssVersion");
-                ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
+                try {
+                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
+                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssVersion");
+                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
-                // nothing have to do
+                // nothing have to do now
             }
 
+            //Log.d("send message to rake server",dataObj.toString());
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {

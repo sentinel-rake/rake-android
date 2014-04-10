@@ -130,9 +130,6 @@ import java.util.Arrays;
         HttpPost httppost = new HttpPost(defaultUrl);
         httppost.setHeader("Accept", "application/json");
         httppost.setHeader("Content-type", "application/json");
-//        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-//        nameValuePairs.add(new BasicNameValuePair("data", jsonObject.toString()));
-
 
         JSONObject valObj = new JSONObject();
 
@@ -148,7 +145,7 @@ import java.util.Arrays;
             StringEntity se = new StringEntity(valObj.toString());
             httppost.setEntity(se);
 
-            HttpResponse response = httpclient.execute(httppost);//, responseHandler);
+            HttpResponse response = httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
 
         } catch (UnsupportedEncodingException e) {
