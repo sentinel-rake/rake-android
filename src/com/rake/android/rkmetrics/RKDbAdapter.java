@@ -1,4 +1,4 @@
-package com.mixpanel.android.mpmetrics;
+package com.rake.android.rkmetrics;
 
 import java.io.File;
 
@@ -15,13 +15,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * SQLite database adapter for MixpanelAPI.
+ * SQLite database adapter for RakeAPI.
  * <p/>
  * <p>Not thread-safe. Instances of this class should only be used
  * by a single thread.
  */
-class MPDbAdapter {
-    private static final String LOGTAG = "MixpanelAPI";
+class RKDbAdapter {
+    private static final String LOGTAG = "RakeAPI";
 
     public enum Table {
         EVENTS("events"),
@@ -38,7 +38,7 @@ class MPDbAdapter {
         private final String mTableName;
     }
 
-    private static final String DATABASE_NAME = "mixpanel";
+    private static final String DATABASE_NAME = "rake";
     private static final int DATABASE_VERSION = 4;
 
     public static final String KEY_DATA = "data";
@@ -77,7 +77,7 @@ class MPDbAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            if (MPConfig.DEBUG) Log.d(LOGTAG, "Creating a new Mixpanel events DB");
+            if (RKConfig.DEBUG) Log.d(LOGTAG, "Creating a new Rake events DB");
 
             db.execSQL(CREATE_EVENTS_TABLE);
             db.execSQL(CREATE_PEOPLE_TABLE);
@@ -87,7 +87,7 @@ class MPDbAdapter {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if (MPConfig.DEBUG) Log.d(LOGTAG, "Upgrading app, replacing Mixpanel events DB");
+            if (RKConfig.DEBUG) Log.d(LOGTAG, "Upgrading app, replacing Rake events DB");
 
             db.execSQL("DROP TABLE IF EXISTS " + Table.EVENTS.getName());
             db.execSQL("DROP TABLE IF EXISTS " + Table.PEOPLE.getName());
@@ -100,13 +100,13 @@ class MPDbAdapter {
         private final File mDatabaseFile;
     }
 
-    public MPDbAdapter(Context context) {
+    public RKDbAdapter(Context context) {
         this(context, DATABASE_NAME);
     }
 
-    public MPDbAdapter(Context context, String dbName) {
-        if (MPConfig.DEBUG)
-            Log.d(LOGTAG, "Mixpanel Database (" + dbName + ") adapter constructed in context " + context);
+    public RKDbAdapter(Context context, String dbName) {
+        if (RKConfig.DEBUG)
+            Log.d(LOGTAG, "Rake Database (" + dbName + ") adapter constructed in context " + context);
 
         mDb = new MPDatabaseHelper(context, dbName);
     }
@@ -121,7 +121,7 @@ class MPDbAdapter {
      */
     public int addJSON(JSONObject j, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) {
+        if (RKConfig.DEBUG) {
             Log.d(LOGTAG, "addJSON " + tableName);
         }
 
@@ -164,7 +164,7 @@ class MPDbAdapter {
      */
     public void cleanupEvents(String last_id, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) {
+        if (RKConfig.DEBUG) {
             Log.d(LOGTAG, "cleanupEvents _id " + last_id + " from table " + tableName);
         }
 
@@ -192,7 +192,7 @@ class MPDbAdapter {
      */
     public void cleanupEvents(long time, Table table) {
         String tableName = table.getName();
-        if (MPConfig.DEBUG) {
+        if (RKConfig.DEBUG) {
             Log.d(LOGTAG, "cleanupEvents time " + time + " from table " + tableName);
         }
 
@@ -218,7 +218,7 @@ class MPDbAdapter {
 
 
     /**
-     * Returns the data string to send to Mixpanel and the maximum ID of the row that
+     * Returns the data string to send to Rake and the maximum ID of the row that
      * we're sending, so we know what rows to delete when a track request was successful.
      *
      * @param table the table to read the JSON from, either "events" or "people"

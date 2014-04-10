@@ -1,4 +1,4 @@
-package com.mixpanel.android.util;
+package com.rake.android.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

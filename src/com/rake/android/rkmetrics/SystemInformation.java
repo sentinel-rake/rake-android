@@ -1,4 +1,4 @@
-package com.mixpanel.android.mpmetrics;
+package com.rake.android.rkmetrics;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,8 +22,8 @@ import android.view.WindowManager;
  * Abstracts away possibly non-present system information classes,
  * and handles permission-dependent queries for default system information.
  */
-/* package */ class SystemInformation {
-    public static final String LOGTAG = "MixpanelAPI";
+class SystemInformation {
+    public static final String LOGTAG = "RakeAPI";
 
     public SystemInformation(Context context) {
         mContext = context;

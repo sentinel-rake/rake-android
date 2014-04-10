@@ -1,10 +1,8 @@
 package com.skplanet.pdp.sentinel.validator;
 
 import android.os.AsyncTask;
-import android.util.Log;
-import com.mixpanel.android.mpmetrics.HttpPoster;
-import com.mixpanel.android.mpmetrics.MPConfig;
-import org.json.JSONObject;
+import com.rake.android.rkmetrics.HttpPoster;
+import com.rake.android.rkmetrics.RKConfig;
 
 
 public class SentinelLogValidatorAsyncTask extends AsyncTask {
@@ -12,10 +10,9 @@ public class SentinelLogValidatorAsyncTask extends AsyncTask {
     @Override
     protected Object doInBackground(Object[] params) {
 
-        String defaultServer = MPConfig.SENTINEL_REMOTE_SERVER;
-        String fallBackServer = MPConfig.SENTINEL_REMOTE_SERVER;
+        String defaultServer = RKConfig.SENTINEL_REMOTE_SERVER;
 
-        final HttpPoster httpPoster = new HttpPoster(defaultServer, fallBackServer);
+        final HttpPoster httpPoster = new HttpPoster(defaultServer);
         HttpPoster.PostResult postResult = null;
 
         try {

@@ -1,4 +1,4 @@
-package com.mixpanel.android.util;
+package com.rake.android.util;
 
 //Copyright 2003-2010 Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland
 //www.source-code.biz, www.inventec.ch/chdh

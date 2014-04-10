@@ -1,4 +1,4 @@
-package com.mixpanel.android.mpmetrics;
+package com.rake.android.rkmetrics;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -18,21 +18,15 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.net.ssl.SSLSocket;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-
-import javax.net.ssl.*;
 
 
 import org.apache.http.HttpEntity;
@@ -48,24 +42,20 @@ import org.apache.http.params.HttpParams;
 import android.util.Log;
 
 
-import com.mixpanel.android.util.Base64Coder;
-import com.mixpanel.android.util.StringUtils;
+import com.rake.android.util.Base64Coder;
+import com.rake.android.util.StringUtils;
 
 import de.jarnbjo.jsnappy.SnappyCompressor;
-import de.jarnbjo.jsnappy.SnappyDecompressor;
 import de.jarnbjo.jsnappy.Buffer;
 import org.json.JSONObject;
 
-import java.util.Arrays;
+public class HttpPoster {
 
-/* package */ public class HttpPoster {
-
-    private static final String LOGTAG = "MixpanelAPI";
+    private static final String LOGTAG = "RakeAPI";
     private final String mDefaultHost;
-    private final String mFallbackHost;
 
     public static enum PostResult {
-        // The post was sent and understood by the Mixpanel service.
+        // The post was sent and understood by the Rake service.
         SUCCEEDED,
 
         // The post couldn't be sent (for example, because there was no connectivity)
@@ -79,9 +69,8 @@ import java.util.Arrays;
 
     ;
 
-    public HttpPoster(String defaultHost, String fallbackHost) {
+    public HttpPoster(String defaultHost) {
         mDefaultHost = defaultHost;
-        mFallbackHost = fallbackHost;
     }
 
     // Will return true only if the request was successful
@@ -105,11 +94,11 @@ import java.util.Arrays;
         String defaultUrl = mDefaultHost + endpointPath;
         PostResult ret = postHttpRequest(defaultUrl, nameValuePairs);
 
-        if (ret == PostResult.FAILED_RECOVERABLE && mFallbackHost != null) {
-            String fallbackUrl = mFallbackHost + endpointPath;
-            if (MPConfig.DEBUG) Log.i(LOGTAG, "Retrying post with new URL: " + fallbackUrl);
-            ret = postHttpRequest(fallbackUrl, nameValuePairs);
-        }
+//        if (ret == PostResult.FAILED_RECOVERABLE && mFallbackHost != null) {
+//            String fallbackUrl = mFallbackHost + endpointPath;
+//            if (RKConfig.DEBUG) Log.i(LOGTAG, "Retrying post with new URL: " + fallbackUrl);
+//            ret = postHttpRequest(fallbackUrl, nameValuePairs);
+//        }
 
         return ret;
     }
@@ -177,7 +166,7 @@ import java.util.Arrays;
         HttpClient httpclient = new DefaultHttpClient(params);
 
         //LONS: 
-        if (endpointUrl.indexOf("https") >= 0 && MPConfig.TRUSTED_SERVER) {
+        if (endpointUrl.indexOf("https") >= 0 && RKConfig.TRUSTED_SERVER) {
             //Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
             httpclient = sslClientDebug(httpclient);
         } else {
@@ -201,10 +190,10 @@ import java.util.Arrays;
                 }
             }
         } catch (IOException e) {
-            Log.i(LOGTAG, "Cannot post message to Mixpanel Servers (May Retry)", e);
+            Log.i(LOGTAG, "Cannot post message to Rake Servers (May Retry)", e);
             ret = PostResult.FAILED_RECOVERABLE;
         } catch (OutOfMemoryError e) {
-            Log.e(LOGTAG, "Cannot post message to Mixpanel Servers, will not retry.", e);
+            Log.e(LOGTAG, "Cannot post message to Rake Servers, will not retry.", e);
             ret = PostResult.FAILED_UNRECOVERABLE;
         }
 
