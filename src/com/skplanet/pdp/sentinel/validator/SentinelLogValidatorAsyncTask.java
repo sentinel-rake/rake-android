@@ -2,7 +2,7 @@ package com.skplanet.pdp.sentinel.validator;
 
 import android.os.AsyncTask;
 import com.rake.android.rkmetrics.HttpPoster;
-import com.rake.android.rkmetrics.RKConfig;
+import com.rake.android.rkmetrics.RakeConfig;
 
 
 public class SentinelLogValidatorAsyncTask extends AsyncTask {
@@ -10,7 +10,7 @@ public class SentinelLogValidatorAsyncTask extends AsyncTask {
     @Override
     protected Object doInBackground(Object[] params) {
 
-        String defaultServer = RKConfig.SENTINEL_REMOTE_SERVER;
+        String defaultServer = RakeConfig.SENTINEL_REMOTE_SERVER;
 
         final HttpPoster httpPoster = new HttpPoster(defaultServer);
         HttpPoster.PostResult postResult = null;

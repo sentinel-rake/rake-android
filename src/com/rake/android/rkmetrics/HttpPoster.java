@@ -94,12 +94,6 @@ public class HttpPoster {
         String defaultUrl = mDefaultHost + endpointPath;
         PostResult ret = postHttpRequest(defaultUrl, nameValuePairs);
 
-//        if (ret == PostResult.FAILED_RECOVERABLE && mFallbackHost != null) {
-//            String fallbackUrl = mFallbackHost + endpointPath;
-//            if (RKConfig.DEBUG) Log.i(LOGTAG, "Retrying post with new URL: " + fallbackUrl);
-//            ret = postHttpRequest(fallbackUrl, nameValuePairs);
-//        }
-
         return ret;
     }
 
@@ -109,7 +103,6 @@ public class HttpPoster {
 
         Log.d("postHttpValidationRequest", defaultUrl);
 
-
         PostResult ret = PostResult.FAILED_UNRECOVERABLE;
 
         HttpParams params = setParamsTimeout();
@@ -118,6 +111,7 @@ public class HttpPoster {
 
         HttpPost httppost = new HttpPost(defaultUrl);
         httppost.setHeader("Accept", "application/json");
+        httppost.setHeader("Accept-Encoding", "gzip");
         httppost.setHeader("Content-type", "application/json");
 
         JSONObject valObj = new JSONObject();
@@ -126,17 +120,19 @@ public class HttpPoster {
             valObj.put("log", log);
             valObj.put("_$schemaId", schemaId);
             valObj.put("_$ssToken", ssToken);
-        } catch (Exception e) {
 
-        }
-
-        try {
             StringEntity se = new StringEntity(valObj.toString());
             httppost.setEntity(se);
 
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
 
+            if (entity != null) {
+                String result = StringUtils.inputStreamToString(entity.getContent());
+                if (result.equals("1\n")) {
+                    ret = PostResult.SUCCEEDED;
+                }
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (ClientProtocolException e) {
@@ -166,19 +162,15 @@ public class HttpPoster {
         HttpClient httpclient = new DefaultHttpClient(params);
 
         //LONS: 
-        if (endpointUrl.indexOf("https") >= 0 && RKConfig.TRUSTED_SERVER) {
-            //Log.d(LOGTAG, "https client changed by lons : ssl client for debuging");
+        if (endpointUrl.indexOf("https") >= 0 && RakeConfig.TRUSTED_SERVER) {
             httpclient = sslClientDebug(httpclient);
-        } else {
-            //Log.d(LOGTAG, "original https client used");
         }
 
         HttpPost httppost = new HttpPost(endpointUrl);
 
         try {
-//            String urlEncoded = StringUtils.inputStreamToString(new UrlEncodedFormEntity(nameValuePairs).getContent());
-            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
+            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             HttpResponse response = httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();

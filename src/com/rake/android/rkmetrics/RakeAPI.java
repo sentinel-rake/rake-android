@@ -18,10 +18,33 @@ public class RakeAPI {
     public static final String VERSION = "0.0.1";
     private boolean isDevServer = false;
 
-    /**
-     * You shouldn't instantiate RakeAPI objects directly. Use
-     * RakeAPI.getInstance to get an instance.
-     */
+    private static final String LOGTAG = "RakeAPI";
+
+    private static final DateFormat baseTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+
+    static {
+        baseTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+    }
+
+    private static final DateFormat localTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+
+    // Maps each token to a singleton RakeAPI instance
+    private static Map<String, Map<Context, RakeAPI>> sInstanceMap = new HashMap<String, Map<Context, RakeAPI>>();
+
+
+    private final Context mContext;
+    private final SystemInformation mSystemInformation;
+    private final AnalyticsMessages mMessages;
+
+    private final String mToken;
+
+    private final SharedPreferences mStoredPreferences;
+
+    // Persistent members. These are loaded and stored from our preferences.
+    private JSONObject mSuperProperties;
+
+
+
     private RakeAPI(Context context, String token) {
         mContext = context;
         mToken = token;
@@ -39,7 +62,6 @@ public class RakeAPI {
             Context appContext = context.getApplicationContext();
             Map<Context, RakeAPI> instances = sInstanceMap.get(token);
 
-
             if (instances == null) {
                 instances = new HashMap<Context, RakeAPI>();
                 sInstanceMap.put(token, instances);
@@ -53,9 +75,9 @@ public class RakeAPI {
 
                 instance.isDevServer = isDevServer;
                 if (isDevServer) {
-                    instance.setBaseServer(context, RKConfig.DEV_BASE_ENDPOINT);
+                    instance.setRakeServer(context, RakeConfig.DEV_BASE_ENDPOINT);
                 } else {
-                    instance.setBaseServer(context, RKConfig.BASE_ENDPOINT);
+                    instance.setRakeServer(context, RakeConfig.BASE_ENDPOINT);
                 }
             }
             return instance;
@@ -79,16 +101,14 @@ public class RakeAPI {
             dataObj.put("baseTime", baseTime);
             dataObj.put("localTime", localTime);
 
-
             JSONObject propertiesObj = new JSONObject();
 
-            // set superProperties
+
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
-            // set user's custom properties
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
@@ -96,7 +116,6 @@ public class RakeAPI {
                 }
             }
 
-            // overwrite default properties
             JSONObject defaultProperties = getDefaultEventProperties();
             if (defaultProperties != null) {
                 for (Iterator<?> iter = defaultProperties.keys(); iter.hasNext(); ) {
@@ -108,7 +127,6 @@ public class RakeAPI {
             propertiesObj.put("baseTime", baseTime);
             propertiesObj.put("localTime", localTime);
 
-            // set dataObj
             dataObj.put("properties", propertiesObj);
 
 
@@ -116,8 +134,6 @@ public class RakeAPI {
                 if (this.isDevServer) {
 
                     StringBuilder log = new StringBuilder();
-                    Log.d("fullLog", propertiesObj.toString());
-
                     JSONArray schemaOrder = propertiesObj.getJSONArray("_$ssSchemaOrder");
                     String schemaId = (String) propertiesObj.get("_$ssSchemaId");
                     String ssToken = (String) propertiesObj.get("_$ssToken");
@@ -142,11 +158,7 @@ public class RakeAPI {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else {
-                // nothing have to do now
             }
-
-            //Log.d("send message to rake server",dataObj.toString());
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
@@ -154,28 +166,30 @@ public class RakeAPI {
         }
     }
 
-    private void setBaseServer(Context context, String server) {
+    private void setRakeServer(Context context, String server) {
 
         AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);
 
     }
+
     public static void setDebug(Boolean debug) {
-        RKConfig.DEBUG = debug;
-        Log.d(LOGTAG, "RKConfig.DEBUG : " + RKConfig.DEBUG);
+        RakeConfig.DEBUG = debug;
+        Log.d(LOGTAG, "RakeConfig.DEBUG : " + RakeConfig.DEBUG);
     }
 
 
     public void flush() {
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "flushEvents");
+
 
         mMessages.postToServer();
     }
 
 
     public void registerSuperProperties(JSONObject superProperties) {
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "registerSuperProperties");
 
         for (Iterator<?> iter = superProperties.keys(); iter.hasNext(); ) {
@@ -198,7 +212,7 @@ public class RakeAPI {
 
 
     public void registerSuperPropertiesOnce(JSONObject superProperties) {
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "registerSuperPropertiesOnce");
 
         for (Iterator<?> iter = superProperties.keys(); iter.hasNext(); ) {
@@ -216,7 +230,7 @@ public class RakeAPI {
     }
 
     public void clearSuperProperties() {
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "clearSuperProperties");
         mSuperProperties = new JSONObject();
     }
@@ -230,8 +244,7 @@ public class RakeAPI {
 //
 //    static void allInstances(InstanceProcessor processor) {
 //        synchronized (sInstanceMap) {
-//            for (Map<Context, RakeAPI> contextInstances : sInstanceMap
-//                    .values()) {
+//            for (Map<Context, RakeAPI> contextInstances : sInstanceMap.values()) {
 //                for (RakeAPI instance : contextInstances.values()) {
 //                    processor.process(instance);
 //                }
@@ -239,100 +252,38 @@ public class RakeAPI {
 //        }
 //    }
 
-    // //////////////////////////////////////////////////////////////////
-    // Conveniences for testing. These methods should not be called by
-    // non-test client code.
-
-    AnalyticsMessages getAnalyticsMessages() {
-        return AnalyticsMessages.getInstance(mContext);
-    }
-
-    SystemInformation getSystemInformation() {
-        return new SystemInformation(mContext);
-    }
-
-    void clearPreferences() {
-        // Will clear distinct_ids, superProperties,
-        // and waiting People Analytics properties. Will have no effect
-        // on messages already queued to send with AnalyticsMessages.
-
-        SharedPreferences.Editor prefsEdit = mStoredPreferences.edit();
-        prefsEdit.clear().commit();
-        readSuperProperties();
-    }
-
-    // //////////////////////////////////////////////////
 
     private JSONObject getDefaultEventProperties() throws JSONException {
+
         JSONObject ret = new JSONObject();
 
-        ret.put("rakeLib", "android");
-        ret.put("rakeLibVersion", VERSION);
-
-        // For querying together with data from other libraries
-        ret.put("osName", "Android");
-        ret.put("osVersion", Build.VERSION.RELEASE == null ? "UNKNOWN"
-                : Build.VERSION.RELEASE);
-
-        ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN"
-                : Build.MANUFACTURER);
-        // ret.put("brand", Build.BRAND == null ? "UNKNOWN" : Build.BRAND);
-        ret.put("deviceModel", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
-        ret.put("deviceId", mSystemInformation.getDeviceId());
+        ret.put("rake_lib", "android");
+        ret.put("rake_lib_version", VERSION);
+        ret.put("os_name", "Android");
+        ret.put("os_version", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
+        ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
+        ret.put("device_model", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
+        ret.put("device_id", mSystemInformation.getDeviceId());
 
         DisplayMetrics displayMetrics = mSystemInformation.getDisplayMetrics();
-        // ret.put("screenDpi", displayMetrics.densityDpi);
-        ret.put("screenHeight", displayMetrics.heightPixels);
-        ret.put("screenWidth", displayMetrics.widthPixels);
+        int displayWidth = displayMetrics.widthPixels;
+        int displayHeight = displayMetrics.heightPixels;
         StringBuilder resolutionBuilder = new StringBuilder();
-        resolutionBuilder.append(displayMetrics.widthPixels);
-        resolutionBuilder.append("*");
-        resolutionBuilder.append(displayMetrics.heightPixels);
-        ret.put("resolution", resolutionBuilder.toString());
+
+        ret.put("screen_height", displayWidth);
+        ret.put("screen_width", displayHeight);
+        ret.put("resolution", resolutionBuilder.append(displayWidth).append("*").append(displayHeight).toString());
 
         String applicationVersionName = mSystemInformation.getAppVersionName();
-
-        if (null != applicationVersionName) {
-            ret.put("appVersion", applicationVersionName);
-        } else {
-            ret.put("appVersion", "UNKNOWN");
-        }
+        ret.put("app_version", applicationVersionName == null ? "UNKNOWN" : applicationVersionName);
 
         String carrier = mSystemInformation.getCurrentNetworkOperator();
-        if (null != carrier && carrier.length() > 0) {
-            ret.put("carrierName", carrier);
-        } else {
-            ret.put("carrierName", "UNKNOWN");
-        }
+        ret.put("carrier_name", (null != carrier && carrier.length() > 0) ? carrier : "UNKNOWN");
 
         Boolean isWifi = mSystemInformation.isWifiConnected();
-        if (null != isWifi) {
-            if (isWifi.booleanValue()) {
-                ret.put("networkType", "WIFI");
-            } else {
-                ret.put("networkType", "NOT WIFI");
-            }
-        } else {
-            ret.put("networkType", "UNKNOWN");
-        }
+        ret.put("network_type", isWifi == null ? "UNKNOWN" : isWifi.booleanValue() == true ? "WIFI" : "NOT WIFI");
 
-        ret.put("languageCode", mContext.getResources().getConfiguration().locale.getCountry());
-
-        // MDN
-//		String permission = "android.permission.READ_PHONE_STATE";
-
-//        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-//        if (res == PackageManager.PERMISSION_GRANTED) {
-//            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-//            String MDN = tMgr.getLine1Number();
-//            if (MDN == null) {
-//                MDN = "";
-//            }
-//            ret.put("MDN", MDN);
-//        } else {
-//            ret.put("MDN", "NO PERMISSION");
-//        }
-
+        ret.put("language_code", mContext.getResources().getConfiguration().locale.getCountry());
 
         return ret;
     }
@@ -340,7 +291,7 @@ public class RakeAPI {
 
     private void readSuperProperties() {
         String props = mStoredPreferences.getString("super_properties", "{}");
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "Loading Super Properties " + props);
 
         try {
@@ -355,7 +306,7 @@ public class RakeAPI {
     private void storeSuperProperties() {
         String props = mSuperProperties.toString();
 
-        if (RKConfig.DEBUG)
+        if (RakeConfig.DEBUG)
             Log.d(LOGTAG, "Storing Super Properties " + props);
         SharedPreferences.Editor prefsEditor = mStoredPreferences.edit();
         prefsEditor.putString("super_properties", props);
@@ -363,29 +314,21 @@ public class RakeAPI {
     }
 
 
-    private static final String LOGTAG = "RakeAPI";
-
-    private static final DateFormat baseTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-
-    static {
-        baseTimeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+    private AnalyticsMessages getAnalyticsMessages() {
+        return AnalyticsMessages.getInstance(mContext);
     }
 
-    private static final DateFormat localTimeFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+    private SystemInformation getSystemInformation() {
+        return new SystemInformation(mContext);
+    }
 
+    void clearPreferences() {
+        // Will clear distinct_ids, superProperties,
+        // and waiting People Analytics properties. Will have no effect
+        // on messages already queued to send with AnalyticsMessages.
 
-    // Maps each token to a singleton RakeAPI instance
-    private static Map<String, Map<Context, RakeAPI>> sInstanceMap = new HashMap<String, Map<Context, RakeAPI>>();
-
-
-    private final Context mContext;
-    private final SystemInformation mSystemInformation;
-    private final AnalyticsMessages mMessages;
-
-    private final String mToken;
-
-    private final SharedPreferences mStoredPreferences;
-
-    // Persistent members. These are loaded and stored from our preferences.
-    private JSONObject mSuperProperties;
+        SharedPreferences.Editor prefsEdit = mStoredPreferences.edit();
+        prefsEdit.clear().commit();
+        readSuperProperties();
+    }
 }

@@ -35,11 +35,11 @@ import android.util.Log;
             Context appContext = messageContext.getApplicationContext();
             AnalyticsMessages ret;
             if (!sInstances.containsKey(appContext)) {
-                if (RKConfig.DEBUG) Log.d(LOGTAG, "Constructing new AnalyticsMessages for Context " + appContext);
+                if (RakeConfig.DEBUG) Log.d(LOGTAG, "Constructing new AnalyticsMessages for Context " + appContext);
                 ret = new AnalyticsMessages(appContext);
                 sInstances.put(appContext, ret);
             } else {
-                if (RKConfig.DEBUG)
+                if (RakeConfig.DEBUG)
                     Log.d(LOGTAG, "AnalyticsMessages for Context " + appContext + " already exists- returning");
                 ret = sInstances.get(appContext);
             }
@@ -100,8 +100,8 @@ import android.util.Log;
         return mWorker.isDead();
     }
 
-    protected RKDbAdapter makeDbAdapter(Context context) {
-        return new RKDbAdapter(context);
+    protected RakeDbAdapter makeDbAdapter(Context context) {
+        return new RakeDbAdapter(context);
     }
 
     protected HttpPoster getPoster(String endpointBase) {
@@ -113,7 +113,7 @@ import android.util.Log;
     // Sends a message if and only if we are running with Rake Message log enabled.
     // Will be called from the Rake thread.
     private void logAboutMessageToRake(String message) {
-        if (mLogRakeMessages.get() || RKConfig.DEBUG) {
+        if (mLogRakeMessages.get() || RakeConfig.DEBUG) {
             Log.i(LOGTAG, message + " (Thread " + Thread.currentThread().getId() + ")");
         }
     }
@@ -152,7 +152,7 @@ import android.util.Log;
             Thread thread = new Thread() {
                 @Override
                 public void run() {
-                    if (RKConfig.DEBUG)
+                    if (RakeConfig.DEBUG)
                         Log.i(LOGTAG, "Starting worker thread " + this.getId());
 
                     Looper.prepare();
@@ -186,8 +186,8 @@ import android.util.Log;
             public AnalyticsMessageHandler() {
                 super();
                 mDbAdapter = makeDbAdapter(mContext);
-                mDbAdapter.cleanupEvents(System.currentTimeMillis() - RKConfig.DATA_EXPIRATION, RKDbAdapter.Table.EVENTS);
-                mDbAdapter.cleanupEvents(System.currentTimeMillis() - RKConfig.DATA_EXPIRATION, RKDbAdapter.Table.PEOPLE);
+                mDbAdapter.cleanupEvents(System.currentTimeMillis() - RakeConfig.DATA_EXPIRATION, RakeDbAdapter.Table.EVENTS);
+                mDbAdapter.cleanupEvents(System.currentTimeMillis() - RakeConfig.DATA_EXPIRATION, RakeDbAdapter.Table.PEOPLE);
             }
 
             @Override
@@ -209,7 +209,7 @@ import android.util.Log;
                         logAboutMessageToRake("Queuing event for sending later");
                         logAboutMessageToRake("    " + message.toString());
 
-                        queueDepth = mDbAdapter.addJSON(message, RKDbAdapter.Table.EVENTS);
+                        queueDepth = mDbAdapter.addJSON(message, RakeDbAdapter.Table.EVENTS);
                     } else if (msg.what == FLUSH_QUEUE) {
                         logAboutMessageToRake("Flushing queue due to scheduled or forced flush");
                         updateFlushFrequency();
@@ -227,7 +227,7 @@ import android.util.Log;
 
                     ///////////////////////////
 
-                    if (queueDepth >= RKConfig.BULK_UPLOAD_LIMIT) {
+                    if (queueDepth >= RakeConfig.BULK_UPLOAD_LIMIT) {
                         logAboutMessageToRake("Flushing queue due to bulk upload limit");
                         updateFlushFrequency();
                         sendAllData();
@@ -259,11 +259,11 @@ import android.util.Log;
             private void sendAllData() {
                 logAboutMessageToRake("Sending records to Rake");
 
-                sendData(RKDbAdapter.Table.EVENTS, "/track?ip=1");
-                sendData(RKDbAdapter.Table.PEOPLE, "/engage");
+                sendData(RakeDbAdapter.Table.EVENTS, "/track?ip=1");
+                sendData(RakeDbAdapter.Table.PEOPLE, "/engage");
             }
 
-            private void sendData(RKDbAdapter.Table table, String endpointUrl) {
+            private void sendData(RakeDbAdapter.Table table, String endpointUrl) {
                 String[] eventsData = mDbAdapter.generateDataString(table);
 
                 if (eventsData != null) {
@@ -287,8 +287,8 @@ import android.util.Log;
                 }
             }
 
-            private String mEndpointHost = RKConfig.BASE_ENDPOINT;
-            private final RKDbAdapter mDbAdapter;
+            private String mEndpointHost = RakeConfig.BASE_ENDPOINT;
+            private final RakeDbAdapter mDbAdapter;
         }// AnalyticsMessageHandler
 
         private void updateFlushFrequency() {
@@ -311,7 +311,7 @@ import android.util.Log;
         private final Object mHandlerLock = new Object();
         private Handler mHandler;
 
-        private long mFlushInterval = RKConfig.FLUSH_RATE;
+        private long mFlushInterval = RakeConfig.FLUSH_RATE;
         private long mFlushCount = 0;
         private long mAveFlushFrequency = 0;
         private long mLastFlushTime = -1;
