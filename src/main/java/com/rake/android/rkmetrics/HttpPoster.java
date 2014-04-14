@@ -45,8 +45,9 @@ import android.util.Log;
 import com.rake.android.util.Base64Coder;
 import com.rake.android.util.StringUtils;
 
-import de.jarnbjo.jsnappy.SnappyCompressor;
-import de.jarnbjo.jsnappy.Buffer;
+//import de.jarnbjo.jsnappy.SnappyCompressor;
+//import de.jarnbjo.jsnappy.Buffer;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HttpPoster {
@@ -79,14 +80,14 @@ public class HttpPoster {
         String encodedData = null;
         String compress = null;
 
-        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
-        if (rawMessage.length() > compressedBuffer.getLength()) {
-            compress = "snappy";
-            encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
-        } else {
-            compress = "plain";
-            encodedData = Base64Coder.encodeString(rawMessage);
-        }
+//        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
+//        if (rawMessage.length() > compressedBuffer.getLength()) {
+//            compress = "snappy";
+//            encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
+//        } else {
+        compress = "plain";
+        encodedData = Base64Coder.encodeString(rawMessage);
+//        }
 
         nameValuePairs.add(new BasicNameValuePair("compress", compress));
         nameValuePairs.add(new BasicNameValuePair("data", encodedData));
@@ -133,6 +134,8 @@ public class HttpPoster {
                     ret = PostResult.SUCCEEDED;
                 }
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (ClientProtocolException e) {
