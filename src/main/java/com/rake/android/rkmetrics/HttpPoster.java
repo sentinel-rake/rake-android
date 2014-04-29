@@ -45,8 +45,6 @@ import android.util.Log;
 import com.rake.android.util.Base64Coder;
 import com.rake.android.util.StringUtils;
 
-//import de.jarnbjo.jsnappy.SnappyCompressor;
-//import de.jarnbjo.jsnappy.Buffer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,19 +54,11 @@ public class HttpPoster {
     private final String mDefaultHost;
 
     public static enum PostResult {
-        // The post was sent and understood by the Rake service.
+
         SUCCEEDED,
-
-        // The post couldn't be sent (for example, because there was no connectivity)
-        // but might work later.
         FAILED_RECOVERABLE,
-
-        // The post itself is bad/unsendable (for example, too big for system memory)
-        // and shouldn't be retried.
         FAILED_UNRECOVERABLE
-    }
-
-    ;
+    };
 
     public HttpPoster(String defaultHost) {
         mDefaultHost = defaultHost;
@@ -78,16 +68,8 @@ public class HttpPoster {
     public PostResult postData(String rawMessage, String endpointPath) {
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
         String encodedData = null;
-        String compress = null;
-
-//        Buffer compressedBuffer = SnappyCompressor.compress(rawMessage.getBytes());
-//        if (rawMessage.length() > compressedBuffer.getLength()) {
-//            compress = "snappy";
-//            encodedData = new String(Base64Coder.encode(compressedBuffer.toByteArray()));
-//        } else {
-        compress = "plain";
+        String compress = "plain";
         encodedData = Base64Coder.encodeString(rawMessage);
-//        }
 
         nameValuePairs.add(new BasicNameValuePair("compress", compress));
         nameValuePairs.add(new BasicNameValuePair("data", encodedData));
@@ -102,7 +84,7 @@ public class HttpPoster {
 
         String defaultUrl = mDefaultHost + endpointPath;
 
-        Log.d("postHttpValidationRequest", defaultUrl);
+        Log.d(LOGTAG, defaultUrl);
 
         PostResult ret = PostResult.FAILED_UNRECOVERABLE;
 
@@ -147,7 +129,6 @@ public class HttpPoster {
     }
 
 
-    // by lons
     public HttpParams setParamsTimeout() {
         HttpParams httpParameters = new BasicHttpParams();
         int timeoutConnection = 3000;
@@ -164,12 +145,12 @@ public class HttpPoster {
         HttpParams params = setParamsTimeout();
         HttpClient httpclient = new DefaultHttpClient(params);
 
-        //LONS: 
         if (endpointUrl.indexOf("https") >= 0 && RakeConfig.TRUSTED_SERVER) {
             httpclient = sslClientDebug(httpclient);
         }
 
         HttpPost httppost = new HttpPost(endpointUrl);
+        httppost.setHeader("Accept-Encoding", "gzip");
 
         try {
 

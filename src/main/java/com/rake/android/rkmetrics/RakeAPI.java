@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "0.0.1";
+    public static final String VERSION = "r0.5.0_c0.3.3";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -42,7 +42,6 @@ public class RakeAPI {
 
     // Persistent members. These are loaded and stored from our preferences.
     private JSONObject mSuperProperties;
-
 
 
     private RakeAPI(Context context, String token) {
@@ -98,8 +97,8 @@ public class RakeAPI {
 
             JSONObject dataObj = new JSONObject();
             dataObj.put("token", mToken);
-            dataObj.put("baseTime", baseTime);
-            dataObj.put("localTime", localTime);
+            dataObj.put("base_time", baseTime);
+            dataObj.put("local_time", localTime);
 
             JSONObject propertiesObj = new JSONObject();
 
@@ -124,40 +123,39 @@ public class RakeAPI {
                 }
             }
 
-            propertiesObj.put("baseTime", baseTime);
-            propertiesObj.put("localTime", localTime);
+            propertiesObj.put("base_time", baseTime);
+            propertiesObj.put("local_time", localTime);
 
             dataObj.put("properties", propertiesObj);
 
+            try {
+                if (properties.has("_$ssToken")) {
+                    if (this.isDevServer) {
 
-            if (properties.has("_$ssToken")) {
-                if (this.isDevServer) {
+                        StringBuilder log = new StringBuilder();
+                        JSONArray schemaOrder = propertiesObj.getJSONArray("_$ssSchemaOrder");
+                        String schemaId = (String) propertiesObj.get("_$ssSchemaId");
+                        String ssToken = (String) propertiesObj.get("_$ssToken");
 
-                    StringBuilder log = new StringBuilder();
-                    JSONArray schemaOrder = propertiesObj.getJSONArray("_$ssSchemaOrder");
-                    String schemaId = (String) propertiesObj.get("_$ssSchemaId");
-                    String ssToken = (String) propertiesObj.get("_$ssToken");
+                        for (int i = 0; i < schemaOrder.length(); i++) {
+                            log.append(propertiesObj.get(schemaOrder.get(i).toString()).toString()).append('\t');
+                        }
+                        log.deleteCharAt(log.length() - 1);
 
-                    for (int i = 0; i < schemaOrder.length(); i++) {
-                        log.append(propertiesObj.get(schemaOrder.get(i).toString()).toString()).append('\t');
+                        if (propertiesObj.has("body")) {
+                            log.append('\t').append(propertiesObj.get("body").toString());
+                        }
+
+                        new SentinelLogValidatorAsyncTask().execute(log.toString(), schemaId, ssToken);
+
+                    } else {
+                        ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
+                        ((JSONObject) (dataObj.get("properties"))).remove("_$ssVersion");
+                        ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
                     }
-                    log.deleteCharAt(log.length() - 1);
-
-                    if (propertiesObj.has("body")) {
-                        log.append('\t').append(propertiesObj.get("body").toString());
-                    }
-
-                    Log.d("fullLog String : ", log.toString());
-                    new SentinelLogValidatorAsyncTask().execute(log.toString(), schemaId, ssToken);
-
                 }
-                try {
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssVersion");
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             mMessages.eventsMessage(dataObj);
