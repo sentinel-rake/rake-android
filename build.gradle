@@ -3,11 +3,15 @@ apply plugin: 'java'
 buildDir = 'build'
 version = '0.3.3'
 
-//tasks.withType(compile) {
-//    options.encoding = 'UTF-8'
-//}
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
 
+// 소스 인코딩 지정방법 1
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+// 소스 인코딩 지정밥법 2
+tasks.withType(Compile) {
+    options.encoding = 'UTF-8'
+}
 
 repositories {
     mavenCentral()

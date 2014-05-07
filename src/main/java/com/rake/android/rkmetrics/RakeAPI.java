@@ -1,5 +1,7 @@
 package com.rake.android.rkmetrics;
 
+// 한글 테스트
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
