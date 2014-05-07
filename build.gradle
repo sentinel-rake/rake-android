@@ -3,6 +3,11 @@ apply plugin: 'java'
 buildDir = 'build'
 version = '0.3.3'
 
+//tasks.withType(compile) {
+//    options.encoding = 'UTF-8'
+//}
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 repositories {
     mavenCentral()

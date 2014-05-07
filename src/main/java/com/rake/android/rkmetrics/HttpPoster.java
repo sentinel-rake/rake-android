@@ -84,8 +84,6 @@ public class HttpPoster {
 
         String defaultUrl = mDefaultHost + endpointPath;
 
-        Log.d(LOGTAG, defaultUrl);
-
         PostResult ret = PostResult.FAILED_UNRECOVERABLE;
 
         HttpParams params = setParamsTimeout();
@@ -112,9 +110,7 @@ public class HttpPoster {
 
             if (entity != null) {
                 String result = StringUtils.inputStreamToString(entity.getContent());
-                if (result.equals("1\n")) {
-                    ret = PostResult.SUCCEEDED;
-                }
+                ret = PostResult.SUCCEEDED;
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -123,6 +119,8 @@ public class HttpPoster {
         } catch (ClientProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch(Exception e){
             e.printStackTrace();
         }
         return ret;
