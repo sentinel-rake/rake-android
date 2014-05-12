@@ -173,8 +173,6 @@ public class RakeAPI {
                 propertiesObj.put("_$ssSchemaOrder",new JSONArray(headerFieldNameList));
                 propertiesObj.put("_$ssSchemaId", "535fa713e4b0ee6faf07e85c");
 
-                Log.d("_$ssSchemaOrder", new JSONArray(headerFieldNameList).toString());
-
                 ArrayList<String> metaFields = new ArrayList<String>(){{
                     add("_$ssToken");
                     add("_$ssSchemaOrder");
