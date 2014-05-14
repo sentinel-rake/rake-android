@@ -19,7 +19,7 @@ public class RakeConfig {
 
 
     public static String BASE_ENDPOINT = "https://rake.skplanet.com:8443/log";
-    public static String DEV_BASE_ENDPOINT = "http://dev.rake.skplanet.com:8000/log/";
+    public static String DEV_BASE_ENDPOINT = "https://pg.rake.skplanet.com:8443/log";
 
 
     public static final int SUBMIT_THREAD_TTL = 60 * 1000;

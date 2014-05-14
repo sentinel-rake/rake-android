@@ -1,17 +1,17 @@
 apply plugin: 'java'
 
 buildDir = 'build'
-version = '0.3.3'
+version = '0.3.4-smartwallet'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
-// 소스 인코딩 지정방법 1
+
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-// 소스 인코딩 지정밥법 2
 tasks.withType(Compile) {
     options.encoding = 'UTF-8'
 }
+
 
 repositories {
     mavenCentral()
@@ -20,22 +20,13 @@ repositories {
     }
 }
 
-//configurations {
-//    extraLibs
-//}
-//
+
 dependencies {
     compile 'org.json:json:20140107'
-//    compile files('libs/JSnappy-0.9.1.jar')
-    compile files('/Users/skplanet/Downloads/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-19/android.jar')
-
-//    extraLibs files('libs/JSnappy-0.9.1.jar')
+    compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-19/android.jar')
 }
 
 jar {
-//    into('libs') {
-//        from configurations.extraLibs
-//    }
     manifest {
         attributes("Implementation-Title": "Rake", "Implementation-Version": version)
     }
