@@ -45,36 +45,6 @@ public class RakeAPI {
     // Persistent members. These are loaded and stored from our preferences.
     private JSONObject mSuperProperties;
 
-    // add for smartwallet
-    private static final ArrayList<String> headerFieldNameList = new ArrayList<String>(){{
-        add("base_time");
-        add("local_time");
-        add("session_id");
-        add("auth_key");
-        add("device_id");
-        add("device_model");
-        add("os_name");
-        add("os_version");
-        add("browser_name");
-        add("browser_version");
-        add("resolution");
-        add("language_code");
-        add("ip");
-        add("network_type");
-        add("carrier_name");
-        add("log_version");
-        add("ble_key");
-        add("app_version");
-        add("store_name");
-        add("source");
-        add("medium");
-        add("term");
-        add("campaign");
-        add("previous_page");
-        add("action_id");
-        add("current_page");
-    }};
-
 
     private RakeAPI(Context context, String token) {
         mContext = context;
@@ -163,34 +133,6 @@ public class RakeAPI {
             propertiesObj.put("local_time", localTime);
 
             dataObj.put("properties", propertiesObj);
-
-
-
-            // add for smartWallet
-            if(this.isDevServer){
-                properties.put("_$ssToken","e6773265-fbd4-47d5-be7e-0bc526f0774b");
-                propertiesObj.put("_$ssToken","e6773265-fbd4-47d5-be7e-0bc526f0774b");
-                propertiesObj.put("_$ssSchemaOrder",new JSONArray(headerFieldNameList));
-                propertiesObj.put("_$ssSchemaId", "535fa713e4b0ee6faf07e85c");
-
-                ArrayList<String> metaFields = new ArrayList<String>(){{
-                    add("_$ssToken");
-                    add("_$ssSchemaOrder");
-                    add("_$ssSchemaId");
-                }};
-
-                // make Smart Wallet body
-                Iterator<?> keys = properties.keys();
-                JSONObject body = new JSONObject();
-                while( keys.hasNext() ){
-                    String key = (String)keys.next();
-                    if(!headerFieldNameList.contains(key) && !metaFields.contains(key)){
-                        body.put(key, properties.get(key));
-                    }
-                }
-                propertiesObj.put("body", body);
-
-            }
 
             try {
                 if (properties.has("_$ssToken")) {
