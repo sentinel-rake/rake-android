@@ -44,34 +44,38 @@ public class RakeAPI {
 
 
     // SmartWallet
-    private static final String ssSchemaId = "53798b54e4b05e4e0e50811b";
+    private static final String ssSchemaId = "5379e4a8e4b05e4e0e50811d";
     private static final HashMap<String, Integer> ssFieldOrder = new HashMap<String, Integer>() {{
-        put("base_time", 0);
-        put("local_time", 1);
-        put("session_id", 2);
-        put("auth_key", 3);
-        put("device_id", 4);
-        put("device_model", 5);
-        put("os_name", 6);
-        put("os_version", 7);
-        put("browser_name", 8);
-        put("browser_version", 9);
-        put("resolution", 10);
-        put("language_code", 11);
-        put("ip", 12);
-        put("network_type", 13);
-        put("carrier_name", 14);
-        put("log_version", 15);
-        put("ble_key", 16);
-        put("app_version", 17);
-        put("store_name", 18);
-        put("source", 19);
-        put("medium", 20);
-        put("term", 21);
-        put("campaign", 22);
-        put("previous_page", 23);
-        put("action_id", 24);
-        put("current_page", 25);
+        put("base_time",0);
+        put("local_time",1);
+        put("recv_time",2);
+        put("rake_lib",3);
+        put("rake_lib_version",4);
+        put("token",5);
+        put("session_id",6);
+        put("auth_key",7);
+        put("device_id",8);
+        put("device_model",9);
+        put("os_name",10);
+        put("os_version",11);
+        put("browser_name",12);
+        put("browser_version",13);
+        put("resolution",14);
+        put("language_code",15);
+        put("ip",16);
+        put("network_type",17);
+        put("carrier_name",18);
+        put("log_version",19);
+        put("ble_key",20);
+        put("app_version",21);
+        put("store_name",22);
+        put("source",23);
+        put("medium",24);
+        put("term",25);
+        put("campaign",26);
+        put("previous_page",27);
+        put("action_id",28);
+        put("current_page",29);
     }};
     private static final ArrayList<String> ssEncryptionField = new ArrayList<String>();
 
