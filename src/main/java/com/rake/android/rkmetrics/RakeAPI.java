@@ -76,6 +76,7 @@ public class RakeAPI {
         put("previous_page",27);
         put("action_id",28);
         put("current_page",29);
+        put("_$body",30);
     }};
     private static final ArrayList<String> ssEncryptionField = new ArrayList<String>();
 
