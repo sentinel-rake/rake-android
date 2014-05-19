@@ -147,6 +147,14 @@ public class RakeAPI {
             }
 
 
+            // <-- SMART_WALLET
+            JSONObject smartwallet_sentinel_meta = new JSONObject();
+            smartwallet_sentinel_meta.put("_$ssSchemaId",ssSchemaId);
+            smartwallet_sentinel_meta.put("_$ssFieldOrder", new JSONObject(ssFieldOrder));
+            smartwallet_sentinel_meta.put("_$encryptionFields", new JSONArray(ssEncryptionField));
+            properties.put("sentinel_meta",smartwallet_sentinel_meta);
+            // SMART_WALLET -->
+
             // 2-1. sentinel(schema) meta data
             JSONObject sentinel_meta;
             String schemaId = null;
@@ -172,11 +180,16 @@ public class RakeAPI {
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-                    if(fieldOrder.has(key)){
-                        propertiesObj.put(key, properties.get(key));
+                    if(fieldOrder != null){
+                        if(fieldOrder.has(key)){
+                            propertiesObj.put(key, properties.get(key));
+                        }else{
+                            body.put(key, properties.get(key));
+                        }
                     }else{
-                        body.put(key, properties.get(key));
+                        propertiesObj.put(key, properties.get(key));
                     }
+
                 }
                 propertiesObj.put("_$body",body);
             }
