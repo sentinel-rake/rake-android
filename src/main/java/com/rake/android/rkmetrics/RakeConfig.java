@@ -34,7 +34,7 @@ public class RakeConfig {
 //    public static int SO_TIMEOUT = 5000;
 
 
-    public static String SENTINEL_REMOTE_SERVER = "http://211.110.43.80:8080";
+//    public static String SENTINEL_REMOTE_SERVER = "http://211.110.43.80:8080";
 //    public static String SENTINEL_REMOTE_SERVER = "http://sentinel.skplanet.co.kr:8080";
 
 }

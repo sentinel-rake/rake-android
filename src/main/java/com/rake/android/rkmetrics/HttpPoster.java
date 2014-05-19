@@ -80,51 +80,51 @@ public class HttpPoster {
         return ret;
     }
 
-    public PostResult postHttpValidationRequest(String log, String schemaId, String ssToken, String endpointPath) {
-
-        String defaultUrl = mDefaultHost + endpointPath;
-
-        PostResult ret = PostResult.FAILED_UNRECOVERABLE;
-
-        HttpParams params = setParamsTimeout();
-        HttpClient httpclient = new DefaultHttpClient(params);
-
-
-        HttpPost httppost = new HttpPost(defaultUrl);
-        httppost.setHeader("Accept", "application/json");
-        httppost.setHeader("Accept-Encoding", "gzip");
-        httppost.setHeader("Content-type", "application/json");
-
-        JSONObject valObj = new JSONObject();
-
-        try {
-            valObj.put("log", log);
-            valObj.put("_$schemaId", schemaId);
-            valObj.put("_$ssToken", ssToken);
-
-            StringEntity se = new StringEntity(valObj.toString());
-            httppost.setEntity(se);
-
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
-
-            if (entity != null) {
-                String result = StringUtils.inputStreamToString(entity.getContent());
-                ret = PostResult.SUCCEEDED;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return ret;
-    }
+//    public PostResult postHttpValidationRequest(String log, String schemaId, String ssToken, String endpointPath) {
+//
+//        String defaultUrl = mDefaultHost + endpointPath;
+//
+//        PostResult ret = PostResult.FAILED_UNRECOVERABLE;
+//
+//        HttpParams params = setParamsTimeout();
+//        HttpClient httpclient = new DefaultHttpClient(params);
+//
+//
+//        HttpPost httppost = new HttpPost(defaultUrl);
+//        httppost.setHeader("Accept", "application/json");
+//        httppost.setHeader("Accept-Encoding", "gzip");
+//        httppost.setHeader("Content-type", "application/json");
+//
+//        JSONObject valObj = new JSONObject();
+//
+//        try {
+//            valObj.put("log", log);
+//            valObj.put("_$schemaId", schemaId);
+//            valObj.put("_$ssToken", ssToken);
+//
+//            StringEntity se = new StringEntity(valObj.toString());
+//            httppost.setEntity(se);
+//
+//            HttpResponse response = httpclient.execute(httppost);
+//            HttpEntity entity = response.getEntity();
+//
+//            if (entity != null) {
+//                String result = StringUtils.inputStreamToString(entity.getContent());
+//                ret = PostResult.SUCCEEDED;
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        } catch (ClientProtocolException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch(Exception e){
+//            e.printStackTrace();
+//        }
+//        return ret;
+//    }
 
 
     public HttpParams setParamsTimeout() {
