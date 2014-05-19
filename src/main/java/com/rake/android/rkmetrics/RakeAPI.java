@@ -43,6 +43,39 @@ public class RakeAPI {
     private JSONObject mSuperProperties;
 
 
+    // SmartWallet
+    private static final String ssSchemaId = "53798b54e4b05e4e0e50811b";
+    private static final HashMap<String, Integer> ssFieldOrder = new HashMap<String, Integer>() {{
+        put("base_time", 0);
+        put("local_time", 1);
+        put("session_id", 2);
+        put("auth_key", 3);
+        put("device_id", 4);
+        put("device_model", 5);
+        put("os_name", 6);
+        put("os_version", 7);
+        put("browser_name", 8);
+        put("browser_version", 9);
+        put("resolution", 10);
+        put("language_code", 11);
+        put("ip", 12);
+        put("network_type", 13);
+        put("carrier_name", 14);
+        put("log_version", 15);
+        put("ble_key", 16);
+        put("app_version", 17);
+        put("store_name", 18);
+        put("source", 19);
+        put("medium", 20);
+        put("term", 21);
+        put("campaign", 22);
+        put("previous_page", 23);
+        put("action_id", 24);
+        put("current_page", 25);
+    }};
+    private static final ArrayList<String> ssEncryptionField = new ArrayList<String>();
+
+
     private RakeAPI(Context context, String token) {
         mContext = context;
         mToken = token;
@@ -116,6 +149,16 @@ public class RakeAPI {
                 }
             }
 
+
+            // <-- SMART_WALLET - ADD schemaId, fieldOrder, encryptionFields
+            JSONObject smartwallet_sentinel_meta = new JSONObject();
+            smartwallet_sentinel_meta.put("_$ssSchemaId", ssSchemaId);
+
+            smartwallet_sentinel_meta.put("_$ssFieldOrder", new JSONObject(ssFieldOrder));
+            smartwallet_sentinel_meta.put("_$encryptionFields", new JSONArray(ssEncryptionField));
+            propertiesObj.put("sentinel_meta", smartwallet_sentinel_meta);
+            // SMART_WALLET -->
+
             // 3-1. sentinel(schema) meta data
             JSONObject sentinel_meta;
             String schemaId = null;
@@ -126,6 +169,7 @@ public class RakeAPI {
 
                 schemaId = (String) sentinel_meta.get("_$ssSchemaId");
                 fieldOrder = sentinel_meta.getJSONObject("_$ssFieldOrder");
+
                 encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
 
                 propertiesObj.remove("sentinel_meta");
