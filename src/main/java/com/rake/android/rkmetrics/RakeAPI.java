@@ -158,7 +158,6 @@ public class RakeAPI {
 
             dataObj.put("properties", propertiesObj);
 
-            System.out.println("rake Log final : " + dataObj.toString());
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
             Log.e(LOGTAG, "Exception tracking event ", e);
