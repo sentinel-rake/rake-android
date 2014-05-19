@@ -1,13 +1,10 @@
 package com.rake.android.rkmetrics;
 
-// 한글 테스트
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import com.skplanet.pdp.sentinel.validator.SentinelLogValidatorAsyncTask;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.3";
+    public static final String VERSION = "r0.5.0_c0.3.5";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -45,36 +42,6 @@ public class RakeAPI {
     // Persistent members. These are loaded and stored from our preferences.
     private JSONObject mSuperProperties;
 
-    // add for smartwallet
-    private static final ArrayList<String> headerFieldNameList = new ArrayList<String>(){{
-        add("base_time");
-        add("local_time");
-        add("session_id");
-        add("auth_key");
-        add("device_id");
-        add("device_model");
-        add("os_name");
-        add("os_version");
-        add("browser_name");
-        add("browser_version");
-        add("resolution");
-        add("language_code");
-        add("ip");
-        add("network_type");
-        add("carrier_name");
-        add("log_version");
-        add("ble_key");
-        add("app_version");
-        add("store_name");
-        add("source");
-        add("medium");
-        add("term");
-        add("campaign");
-        add("previous_page");
-        add("action_id");
-        add("current_page");
-    }};
-
 
     private RakeAPI(Context context, String token) {
         mContext = context;
@@ -85,10 +52,6 @@ public class RakeAPI {
 
         mStoredPreferences = context.getSharedPreferences("com.rake.android.rkmetrics.RakeAPI_" + token, Context.MODE_PRIVATE);
         readSuperProperties();
-
-
-
-
     }
 
 
@@ -125,25 +88,27 @@ public class RakeAPI {
     }
 
     public void track(JSONObject properties) {
+        Date now = new Date();
         try {
-            Date now = new Date();
-
-            String baseTime = baseTimeFormat.format(now);
-            String localTime = localTimeFormat.format(now);
 
             JSONObject dataObj = new JSONObject();
-            dataObj.put("token", mToken);
-            dataObj.put("base_time", baseTime);
-            dataObj.put("local_time", localTime);
-
             JSONObject propertiesObj = new JSONObject();
 
+            // rake token
+            propertiesObj.put("token", mToken);
 
+            // time
+            propertiesObj.put("base_time", baseTimeFormat.format(now));
+            propertiesObj.put("local_time", localTimeFormat.format(now));
+
+
+            // 1. super properties
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
+            // 2. custom properties
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
@@ -151,82 +116,47 @@ public class RakeAPI {
                 }
             }
 
+            // 3-1. sentinel(schema) meta data
+            JSONObject sentinel_meta;
+            String schemaId = null;
+            JSONObject fieldOrder = null;
+            JSONArray encryptionFields = null;
+            if (propertiesObj.has("sentinel_meta")) {
+                sentinel_meta = propertiesObj.getJSONObject("sentinel_meta");
+
+                schemaId = (String) sentinel_meta.get("_$ssSchemaId");
+                fieldOrder = sentinel_meta.getJSONObject("_$ssFieldOrder");
+                encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
+
+                propertiesObj.remove("sentinel_meta");
+                dataObj.put("_$schemaId", schemaId);
+                dataObj.put("_$fieldOrder", fieldOrder);
+                dataObj.put("_$encryptionFields", encryptionFields);
+            }
+
+
+            // 3-2. auto : device info
+            // get only values in fieldOrder
             JSONObject defaultProperties = getDefaultEventProperties();
             if (defaultProperties != null) {
                 for (Iterator<?> iter = defaultProperties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-                    propertiesObj.put(key, defaultProperties.get(key));
+                    boolean addToProperties = true;
+
+                    if (schemaId != null) {
+                        if (fieldOrder.has(key)) {
+                            addToProperties = true;
+                        } else {
+                            addToProperties = false;
+                        }
+                    }
+                    if (addToProperties) {
+                        propertiesObj.put(key, defaultProperties.get(key));
+                    }
                 }
             }
-
-            propertiesObj.put("base_time", baseTime);
-            propertiesObj.put("local_time", localTime);
 
             dataObj.put("properties", propertiesObj);
-
-
-
-            // add for smartWallet
-            if(this.isDevServer){
-                properties.put("_$ssToken","e6773265-fbd4-47d5-be7e-0bc526f0774b");
-                propertiesObj.put("_$ssToken","e6773265-fbd4-47d5-be7e-0bc526f0774b");
-                propertiesObj.put("_$ssSchemaOrder",new JSONArray(headerFieldNameList));
-                propertiesObj.put("_$ssSchemaId", "535fa713e4b0ee6faf07e85c");
-
-                ArrayList<String> metaFields = new ArrayList<String>(){{
-                    add("_$ssToken");
-                    add("_$ssSchemaOrder");
-                    add("_$ssSchemaId");
-                }};
-
-                // make Smart Wallet body
-                Iterator<?> keys = properties.keys();
-                JSONObject body = new JSONObject();
-                while( keys.hasNext() ){
-                    String key = (String)keys.next();
-                    if(!headerFieldNameList.contains(key) && !metaFields.contains(key)){
-                        body.put(key, properties.get(key));
-                    }
-                }
-                propertiesObj.put("body", body);
-
-            }
-
-            try {
-                if (properties.has("_$ssToken")) {
-                    if (this.isDevServer) {
-
-                        StringBuilder log = new StringBuilder();
-                        JSONArray schemaOrder = propertiesObj.getJSONArray("_$ssSchemaOrder");
-                        String schemaId = (String) propertiesObj.get("_$ssSchemaId");
-                        String ssToken = (String) propertiesObj.get("_$ssToken");
-
-                        for (int i = 0; i < schemaOrder.length(); i++) {
-                            if(propertiesObj.has(schemaOrder.get(i).toString())){
-                                log.append(propertiesObj.get(schemaOrder.get(i).toString()).toString()).append('\t');
-                            }else{
-                                log.append("").append('\t');
-                            }
-                        }
-                        log.deleteCharAt(log.length() - 1);
-
-                        if (propertiesObj.has("body")) {
-                            log.append('\t').append(propertiesObj.get("body").toString());
-                        }
-
-                        new SentinelLogValidatorAsyncTask().execute(log.toString(), schemaId, ssToken);
-
-
-                    }
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssToken");
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaId");
-                    ((JSONObject) (dataObj.get("properties"))).remove("_$ssSchemaOrder");
-                    ((JSONObject) (dataObj.get("properties"))).remove("body");
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
             mMessages.eventsMessage(dataObj);
         } catch (JSONException e) {
