@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.5";
+    public static final String VERSION = "r0.5.0_c0.3.6";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -124,6 +124,28 @@ public class RakeAPI {
                 dataObj.put("_$schemaId", schemaId);
                 dataObj.put("_$fieldOrder", fieldOrder);
                 dataObj.put("_$encryptionFields", encryptionFields);
+            } else if (properties.has("_$ssSchemaId")) {
+                // old shuttle
+                dataObj.put("_$schemaId", properties.get("_$ssSchemaId"));
+                properties.remove("_$ssSchemaId");
+
+                // convert schemaOrder -> fieldOrder
+                JSONArray schemaOrder = properties.getJSONArray("_$ssSchemaOrder");
+                fieldOrder = new JSONObject();
+                int i = 0;
+                for (i = 0; i < schemaOrder.length(); i++) {
+                    String fieldName = schemaOrder.getString(i);
+                    fieldOrder.put(fieldName, i);
+                }
+                fieldOrder.put("_$body", i);
+                dataObj.put("_$fieldOrder", fieldOrder);
+                properties.remove("_$ssSchemaOrder");
+
+                // remove useless token
+                properties.remove("_$ssToken");
+
+                // add dummy encryptionFields
+                dataObj.put("_$encryptionFields", new JSONArray());
             }
 
 
@@ -132,20 +154,30 @@ public class RakeAPI {
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-                    if(fieldOrder != null){
-                        if(fieldOrder.has(key)){
+
+                    // <-- old shuttle - legacy
+                    if (key.compareTo("body") == 0) {
+                        // old shuttle
+                        for (Iterator<?> bodyiter = properties.getJSONObject(key).keys(); bodyiter.hasNext(); ) {
+                            String bodyKey = (String) bodyiter.next();
+                            body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
+                        }
+                    }
+                    // old shuttle - legacy -->
+
+                    else if (fieldOrder != null) {
+                        if (fieldOrder.has(key)) {
                             propertiesObj.put(key, properties.get(key));
-                        }else{
+                        } else {
                             body.put(key, properties.get(key));
                         }
-                    }else{
+                    } else {
                         propertiesObj.put(key, properties.get(key));
                     }
 
                 }
-                propertiesObj.put("_$body",body);
+                propertiesObj.put("_$body", body);
             }
-
 
 
             // 3. auto : device info
@@ -168,6 +200,8 @@ public class RakeAPI {
                     }
                 }
             }
+
+            propertiesObj.put("token", mToken);
 
             // 4. put properties
             dataObj.put("properties", propertiesObj);

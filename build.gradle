@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 buildDir = 'build'
-version = '0.3.5'
+version = '0.3.6'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
