@@ -146,45 +146,44 @@ public class RakeAPI {
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
-            // 2. custom properties
-            if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
-                    String key = (String) iter.next();
-                    propertiesObj.put(key, properties.get(key));
-                }
-            }
 
-
-            // <-- SMART_WALLET - ADD schemaId, fieldOrder, encryptionFields
-            JSONObject smartwallet_sentinel_meta = new JSONObject();
-            smartwallet_sentinel_meta.put("_$ssSchemaId", ssSchemaId);
-
-            smartwallet_sentinel_meta.put("_$ssFieldOrder", new JSONObject(ssFieldOrder));
-            smartwallet_sentinel_meta.put("_$encryptionFields", new JSONArray(ssEncryptionField));
-            propertiesObj.put("sentinel_meta", smartwallet_sentinel_meta);
-            // SMART_WALLET -->
-
-            // 3-1. sentinel(schema) meta data
+            // 2-1. sentinel(schema) meta data
             JSONObject sentinel_meta;
             String schemaId = null;
             JSONObject fieldOrder = null;
             JSONArray encryptionFields = null;
-            if (propertiesObj.has("sentinel_meta")) {
-                sentinel_meta = propertiesObj.getJSONObject("sentinel_meta");
+            if (properties.has("sentinel_meta")) {
+                sentinel_meta = properties.getJSONObject("sentinel_meta");
 
                 schemaId = (String) sentinel_meta.get("_$ssSchemaId");
                 fieldOrder = sentinel_meta.getJSONObject("_$ssFieldOrder");
 
                 encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
 
-                propertiesObj.remove("sentinel_meta");
+                properties.remove("sentinel_meta");
                 dataObj.put("_$schemaId", schemaId);
                 dataObj.put("_$fieldOrder", fieldOrder);
                 dataObj.put("_$encryptionFields", encryptionFields);
             }
 
 
-            // 3-2. auto : device info
+            // 2-2. custom properties
+            JSONObject body = new JSONObject();
+            if (properties != null) {
+                for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
+                    String key = (String) iter.next();
+                    if(fieldOrder.has(key)){
+                        propertiesObj.put(key, properties.get(key));
+                    }else{
+                        body.put(key, properties.get(key));
+                    }
+                }
+                propertiesObj.put("_$body",body);
+            }
+
+
+
+            // 3. auto : device info
             // get only values in fieldOrder
             JSONObject defaultProperties = getDefaultEventProperties();
             if (defaultProperties != null) {
@@ -205,6 +204,7 @@ public class RakeAPI {
                 }
             }
 
+            // 4. put properties
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
