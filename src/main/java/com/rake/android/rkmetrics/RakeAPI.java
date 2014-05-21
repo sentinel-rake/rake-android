@@ -93,14 +93,6 @@ public class RakeAPI {
             JSONObject dataObj = new JSONObject();
             JSONObject propertiesObj = new JSONObject();
 
-            // rake token
-            propertiesObj.put("token", mToken);
-
-            // time
-            propertiesObj.put("base_time", baseTimeFormat.format(now));
-            propertiesObj.put("local_time", localTimeFormat.format(now));
-
-
             // 1. super properties
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
@@ -158,8 +150,8 @@ public class RakeAPI {
                     // <-- old shuttle - legacy
                     if (key.compareTo("body") == 0) {
                         // old shuttle
-                        for (Iterator<?> bodyiter = properties.getJSONObject(key).keys(); bodyiter.hasNext(); ) {
-                            String bodyKey = (String) bodyiter.next();
+                        for (Iterator<?> bodyIter = properties.getJSONObject(key).keys(); bodyIter.hasNext(); ) {
+                            String bodyKey = (String) bodyIter.next();
                             body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
                         }
                     }
@@ -167,14 +159,17 @@ public class RakeAPI {
 
                     else if (fieldOrder != null) {
                         if (fieldOrder.has(key)) {
-                            propertiesObj.put(key, properties.get(key));
+                            if(propertiesObj.has(key) && properties.get(key).toString().length()==0){
+                                // do not overwrite with empty string
+                            }else {
+                                propertiesObj.put(key, properties.get(key));
+                            }
                         } else {
                             body.put(key, properties.get(key));
                         }
                     } else {
                         propertiesObj.put(key, properties.get(key));
                     }
-
                 }
                 propertiesObj.put("_$body", body);
             }
@@ -201,7 +196,13 @@ public class RakeAPI {
                 }
             }
 
+            // rake token
             propertiesObj.put("token", mToken);
+
+            // time
+            propertiesObj.put("base_time", baseTimeFormat.format(now));
+            propertiesObj.put("local_time", localTimeFormat.format(now));
+
 
             // 4. put properties
             dataObj.put("properties", propertiesObj);
