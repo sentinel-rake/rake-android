@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.6";
+    public static final String VERSION = "r0.5.0_c0.3.7";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -105,6 +105,7 @@ public class RakeAPI {
             JSONObject fieldOrder = null;
             JSONArray encryptionFields = null;
             if (properties.has("sentinel_meta")) {
+                // new shuttle
                 sentinel_meta = properties.getJSONObject("sentinel_meta");
 
                 schemaId = (String) sentinel_meta.get("_$ssSchemaId");
