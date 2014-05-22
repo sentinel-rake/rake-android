@@ -209,6 +209,10 @@ public class RakeAPI {
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
+
+            if(isDevServer){
+                flush();
+            }
         } catch (JSONException e) {
             Log.e(LOGTAG, "Exception tracking event ", e);
         }
