@@ -46,37 +46,37 @@ public class RakeAPI {
     // SmartWallet
     private static final String ssSchemaId = "5379e4a8e4b05e4e0e50811d";
     private static final HashMap<String, Integer> ssFieldOrder = new HashMap<String, Integer>() {{
-        put("base_time",0);
-        put("local_time",1);
-        put("recv_time",2);
-        put("rake_lib",3);
-        put("rake_lib_version",4);
-        put("token",5);
-        put("session_id",6);
-        put("auth_key",7);
-        put("device_id",8);
-        put("device_model",9);
-        put("os_name",10);
-        put("os_version",11);
-        put("browser_name",12);
-        put("browser_version",13);
-        put("resolution",14);
-        put("language_code",15);
-        put("ip",16);
-        put("network_type",17);
-        put("carrier_name",18);
-        put("log_version",19);
-        put("ble_key",20);
-        put("app_version",21);
-        put("store_name",22);
-        put("source",23);
-        put("medium",24);
-        put("term",25);
-        put("campaign",26);
-        put("previous_page",27);
-        put("action_id",28);
-        put("current_page",29);
-        put("_$body",30);
+        put("base_time", 0);
+        put("local_time", 1);
+        put("recv_time", 2);
+        put("rake_lib", 3);
+        put("rake_lib_version", 4);
+        put("token", 5);
+        put("session_id", 6);
+        put("auth_key", 7);
+        put("device_id", 8);
+        put("device_model", 9);
+        put("os_name", 10);
+        put("os_version", 11);
+        put("browser_name", 12);
+        put("browser_version", 13);
+        put("resolution", 14);
+        put("language_code", 15);
+        put("ip", 16);
+        put("network_type", 17);
+        put("carrier_name", 18);
+        put("log_version", 19);
+        put("ble_key", 20);
+        put("app_version", 21);
+        put("store_name", 22);
+        put("source", 23);
+        put("medium", 24);
+        put("term", 25);
+        put("campaign", 26);
+        put("previous_page", 27);
+        put("action_id", 28);
+        put("current_page", 29);
+        put("_$body", 30);
     }};
     private static final ArrayList<String> ssEncryptionField = new ArrayList<String>();
 
@@ -149,10 +149,10 @@ public class RakeAPI {
 
             // <-- SMART_WALLET
             JSONObject smartwallet_sentinel_meta = new JSONObject();
-            smartwallet_sentinel_meta.put("_$ssSchemaId",ssSchemaId);
+            smartwallet_sentinel_meta.put("_$ssSchemaId", ssSchemaId);
             smartwallet_sentinel_meta.put("_$ssFieldOrder", new JSONObject(ssFieldOrder));
             smartwallet_sentinel_meta.put("_$encryptionFields", new JSONArray(ssEncryptionField));
-            properties.put("sentinel_meta",smartwallet_sentinel_meta);
+            properties.put("sentinel_meta", smartwallet_sentinel_meta);
             // SMART_WALLET -->
 
             // 2-1. sentinel(schema) meta data
@@ -180,20 +180,19 @@ public class RakeAPI {
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-                    if(fieldOrder != null){
-                        if(fieldOrder.has(key)){
+                    if (fieldOrder != null) {
+                        if (fieldOrder.has(key)) {
                             propertiesObj.put(key, properties.get(key));
-                        }else{
+                        } else {
                             body.put(key, properties.get(key));
                         }
-                    }else{
+                    } else {
                         propertiesObj.put(key, properties.get(key));
                     }
 
                 }
-                propertiesObj.put("_$body",body);
+                propertiesObj.put("_$body", body);
             }
-
 
 
             // 3. auto : device info
@@ -222,8 +221,11 @@ public class RakeAPI {
 
             mMessages.eventsMessage(dataObj);
 
-            if(isDevServer){
+            if (isDevServer) {
+                Log.d("Rake", "flush");
                 flush();
+            }else{
+                Log.d("Rake", "no devserver");
             }
 
         } catch (JSONException e) {
