@@ -50,6 +50,7 @@ public class RakeAPI {
     }};
 
     // SmartWallet
+    private static final String projectId = "535b886ce4b09246064440ff";
     private static final String ssSchemaId = "5379e4a8e4b05e4e0e50811d";
     private static final HashMap<String, Integer> ssFieldOrder = new HashMap<String, Integer>() {{
         put("base_time", 0);
@@ -87,6 +88,7 @@ public class RakeAPI {
     }};
     private static final ArrayList<String> ssEncryptionField = new ArrayList<String>(){{
         add("mdn");
+        add("device_id");
     }};
 
 
@@ -157,9 +159,10 @@ public class RakeAPI {
 
             // <-- SMART_WALLET
             JSONObject smartwallet_sentinel_meta = new JSONObject();
-            smartwallet_sentinel_meta.put("_$ssSchemaId", ssSchemaId);
-            smartwallet_sentinel_meta.put("_$ssFieldOrder", new JSONObject(ssFieldOrder));
+            smartwallet_sentinel_meta.put("_$schemaId", ssSchemaId);
+            smartwallet_sentinel_meta.put("_$fieldOrder", new JSONObject(ssFieldOrder));
             smartwallet_sentinel_meta.put("_$encryptionFields", new JSONArray(ssEncryptionField));
+            smartwallet_sentinel_meta.put("_$projectId", projectId);
             properties.put("sentinel_meta", smartwallet_sentinel_meta);
             // SMART_WALLET -->
 
