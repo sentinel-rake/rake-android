@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 buildDir = 'build'
-version = '0.3.8'
+version = '0.3.8-smartwallet'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
