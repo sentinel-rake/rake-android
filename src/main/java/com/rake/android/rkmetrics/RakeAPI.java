@@ -141,18 +141,17 @@ public class RakeAPI {
             JSONObject dataObj = new JSONObject();
             JSONObject propertiesObj = new JSONObject();
 
-            // rake token
-            propertiesObj.put("token", mToken);
-
-            // time
-            propertiesObj.put("base_time", baseTimeFormat.format(now));
-            propertiesObj.put("local_time", localTimeFormat.format(now));
-
-
             // 1. super properties
             for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
                 String key = (String) iter.next();
                 propertiesObj.put(key, mSuperProperties.get(key));
+            }
+
+            // for non-sentinel user
+            // check super properties
+            if(propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")){
+                properties.put("sentinel_meta", propertiesObj.get("sentinel_meta"));
+                propertiesObj.remove("sentinel_meta");
             }
 
 
@@ -169,12 +168,13 @@ public class RakeAPI {
             String schemaId = null;
             JSONObject fieldOrder = null;
             JSONArray encryptionFields = null;
+
             if (properties.has("sentinel_meta")) {
                 // new shuttle
                 sentinel_meta = properties.getJSONObject("sentinel_meta");
 
-                schemaId = (String) sentinel_meta.get("_$ssSchemaId");
-                fieldOrder = sentinel_meta.getJSONObject("_$ssFieldOrder");
+                schemaId = (String) sentinel_meta.get("_$schemaId");
+                fieldOrder = sentinel_meta.getJSONObject("_$fieldOrder");
 
                 encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
 
@@ -204,6 +204,8 @@ public class RakeAPI {
 
                 // add dummy encryptionFields
                 dataObj.put("_$encryptionFields", new JSONArray());
+            }else{
+                // no shuttle
             }
 
 
@@ -253,14 +255,11 @@ public class RakeAPI {
                     if (schemaId != null) {
                         if (fieldOrder.has(key)) {
                             addToProperties = true;
-                            Log.d("Rake",key+" is acceptable");
                         } else {
                             addToProperties = false;
-                            Log.d("Rake",key+" is not acceptable (blacklist)");
                         }
-                    }else if(defaultValueBlackList.contains(key)) {
-                        Log.d("Rake",key+" is not acceptable");
-                        addToProperties = false;
+                    }else if(defaultValueBlackList.contains(key)){
+                            addToProperties = false;
                     }
 
                     if (addToProperties) {
@@ -281,6 +280,7 @@ public class RakeAPI {
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
+
 
             if(isDevServer){
                 flush();
