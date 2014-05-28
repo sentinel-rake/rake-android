@@ -106,17 +106,25 @@ public class RakeAPI {
                 propertiesObj.put(key, mSuperProperties.get(key));
             }
 
+            // for non-sentinel user
+            // check super properties
+            if(propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")){
+                properties.put("sentinel_meta", propertiesObj.get("sentinel_meta"));
+                propertiesObj.remove("sentinel_meta");
+            }
+
             // 2-1. sentinel(schema) meta data
             JSONObject sentinel_meta;
             String schemaId = null;
             JSONObject fieldOrder = null;
             JSONArray encryptionFields = null;
+
             if (properties.has("sentinel_meta")) {
                 // new shuttle
                 sentinel_meta = properties.getJSONObject("sentinel_meta");
 
-                schemaId = (String) sentinel_meta.get("_$ssSchemaId");
-                fieldOrder = sentinel_meta.getJSONObject("_$ssFieldOrder");
+                schemaId = (String) sentinel_meta.get("_$schemaId");
+                fieldOrder = sentinel_meta.getJSONObject("_$fieldOrder");
 
                 encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
 
@@ -146,6 +154,8 @@ public class RakeAPI {
 
                 // add dummy encryptionFields
                 dataObj.put("_$encryptionFields", new JSONArray());
+            }else{
+                // no shuttle
             }
 
 
@@ -197,10 +207,7 @@ public class RakeAPI {
                         } else {
                             addToProperties = false;
                         }
-                    }else{
-                        // Sentinel을 쓰지 않았는데,
-                        // 마음에 걸리는 애들은 빼면면 됨
-                        if(defaultValueBlackList.contains(key))
+                    }else if(defaultValueBlackList.contains(key)){
                             addToProperties = false;
                     }
 
@@ -222,6 +229,7 @@ public class RakeAPI {
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
+
 
             if(isDevServer){
                 flush();
