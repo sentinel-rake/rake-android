@@ -46,7 +46,7 @@ public class RakeAPI {
 
     // Device Info - black list
     private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>(){{
-            add("mdn");
+        add("mdn");
     }};
 
     // SmartWallet
@@ -82,9 +82,12 @@ public class RakeAPI {
         put("previous_page", 27);
         put("action_id", 28);
         put("current_page", 29);
-        put("_$body", 30);
+        put("mdn", 30);
+        put("_$body", 31);
     }};
-    private static final ArrayList<String> ssEncryptionField = new ArrayList<String>();
+    private static final ArrayList<String> ssEncryptionField = new ArrayList<String>(){{
+        add("mdn");
+    }};
 
 
     private RakeAPI(Context context, String token) {
@@ -250,14 +253,14 @@ public class RakeAPI {
                     if (schemaId != null) {
                         if (fieldOrder.has(key)) {
                             addToProperties = true;
+                            Log.d("Rake",key+" is acceptable");
                         } else {
                             addToProperties = false;
+                            Log.d("Rake",key+" is not acceptable (blacklist)");
                         }
-                    }else{
-                        // Sentinel을 쓰지 않았는데,
-                        // 마음에 걸리는 애들은 빼면면 됨
-                        if(defaultValueBlackList.contains(key))
-                            addToProperties = false;
+                    }else if(defaultValueBlackList.contains(key)) {
+                        Log.d("Rake",key+" is not acceptable");
+                        addToProperties = false;
                     }
 
                     if (addToProperties) {
