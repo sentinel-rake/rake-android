@@ -2,7 +2,9 @@ package com.rake.android.rkmetrics;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import org.json.JSONArray;
@@ -14,7 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.5";
+    public static final String VERSION = "r0.5.0_c0.3.8";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -42,6 +44,10 @@ public class RakeAPI {
     // Persistent members. These are loaded and stored from our preferences.
     private JSONObject mSuperProperties;
 
+    // Device Info - black list
+    private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>(){{
+            add("mdn");
+    }};
 
     // SmartWallet
     private static final String ssSchemaId = "5379e4a8e4b05e4e0e50811d";
@@ -161,6 +167,7 @@ public class RakeAPI {
             JSONObject fieldOrder = null;
             JSONArray encryptionFields = null;
             if (properties.has("sentinel_meta")) {
+                // new shuttle
                 sentinel_meta = properties.getJSONObject("sentinel_meta");
 
                 schemaId = (String) sentinel_meta.get("_$ssSchemaId");
@@ -172,6 +179,28 @@ public class RakeAPI {
                 dataObj.put("_$schemaId", schemaId);
                 dataObj.put("_$fieldOrder", fieldOrder);
                 dataObj.put("_$encryptionFields", encryptionFields);
+            } else if (properties.has("_$ssSchemaId")) {
+                // old shuttle
+                dataObj.put("_$schemaId", properties.get("_$ssSchemaId"));
+                properties.remove("_$ssSchemaId");
+
+                // convert schemaOrder -> fieldOrder
+                JSONArray schemaOrder = properties.getJSONArray("_$ssSchemaOrder");
+                fieldOrder = new JSONObject();
+                int i = 0;
+                for (i = 0; i < schemaOrder.length(); i++) {
+                    String fieldName = schemaOrder.getString(i);
+                    fieldOrder.put(fieldName, i);
+                }
+                fieldOrder.put("_$body", i);
+                dataObj.put("_$fieldOrder", fieldOrder);
+                properties.remove("_$ssSchemaOrder");
+
+                // remove useless token
+                properties.remove("_$ssToken");
+
+                // add dummy encryptionFields
+                dataObj.put("_$encryptionFields", new JSONArray());
             }
 
 
@@ -180,9 +209,24 @@ public class RakeAPI {
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-                    if (fieldOrder != null) {
+
+                    // <-- old shuttle - legacy
+                    if (key.compareTo("body") == 0) {
+                        // old shuttle
+                        for (Iterator<?> bodyIter = properties.getJSONObject(key).keys(); bodyIter.hasNext(); ) {
+                            String bodyKey = (String) bodyIter.next();
+                            body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
+                        }
+                    }
+                    // old shuttle - legacy -->
+
+                    else if (fieldOrder != null) {
                         if (fieldOrder.has(key)) {
-                            propertiesObj.put(key, properties.get(key));
+                            if(propertiesObj.has(key) && properties.get(key).toString().length()==0){
+                                // do not overwrite with empty string
+                            }else {
+                                propertiesObj.put(key, properties.get(key));
+                            }
                         } else {
                             body.put(key, properties.get(key));
                         }
@@ -209,25 +253,35 @@ public class RakeAPI {
                         } else {
                             addToProperties = false;
                         }
+                    }else{
+                        // Sentinel을 쓰지 않았는데,
+                        // 마음에 걸리는 애들은 빼면면 됨
+                        if(defaultValueBlackList.contains(key))
+                            addToProperties = false;
                     }
+
                     if (addToProperties) {
                         propertiesObj.put(key, defaultProperties.get(key));
                     }
                 }
             }
 
+            // rake token
+            propertiesObj.put("token", mToken);
+
+            // time
+            propertiesObj.put("base_time", baseTimeFormat.format(now));
+            propertiesObj.put("local_time", localTimeFormat.format(now));
+
+
             // 4. put properties
             dataObj.put("properties", propertiesObj);
 
             mMessages.eventsMessage(dataObj);
 
-            if (isDevServer) {
-                Log.d("Rake", "flush");
+            if(isDevServer){
                 flush();
-            }else{
-                Log.d("Rake", "no devserver");
             }
-
         } catch (JSONException e) {
             Log.e(LOGTAG, "Exception tracking event ", e);
         }
@@ -351,6 +405,20 @@ public class RakeAPI {
         ret.put("network_type", isWifi == null ? "UNKNOWN" : isWifi.booleanValue() == true ? "WIFI" : "NOT WIFI");
 
         ret.put("language_code", mContext.getResources().getConfiguration().locale.getCountry());
+
+
+        // MDN
+        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
+        if (res == PackageManager.PERMISSION_GRANTED) {
+            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            String mdn = tMgr.getLine1Number();
+            if (mdn == null) {
+                mdn = "";
+            }
+            ret.put("mdn", mdn);
+        } else {
+            ret.put("mdn", "NO PERMISSION");
+        }
 
         return ret;
     }
