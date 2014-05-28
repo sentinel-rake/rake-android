@@ -45,7 +45,7 @@ public class RakeAPI {
     private JSONObject mSuperProperties;
 
     // Device Info - black list
-    private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>(){{
+    private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>() {{
         add("mdn");
     }};
 
@@ -62,31 +62,31 @@ public class RakeAPI {
         put("session_id", 6);
         put("auth_key", 7);
         put("device_id", 8);
-        put("device_model", 9);
-        put("os_name", 10);
-        put("os_version", 11);
-        put("browser_name", 12);
-        put("browser_version", 13);
-        put("resolution", 14);
-        put("language_code", 15);
-        put("ip", 16);
-        put("network_type", 17);
-        put("carrier_name", 18);
-        put("log_version", 19);
-        put("ble_key", 20);
-        put("app_version", 21);
-        put("store_name", 22);
-        put("source", 23);
-        put("medium", 24);
-        put("term", 25);
-        put("campaign", 26);
-        put("previous_page", 27);
-        put("action_id", 28);
-        put("current_page", 29);
-        put("mdn", 30);
+        put("mdn", 9);
+        put("device_model", 10);
+        put("os_name", 11);
+        put("os_version", 12);
+        put("browser_name", 13);
+        put("browser_version", 14);
+        put("resolution", 15);
+        put("language_code", 16);
+        put("ip", 17);
+        put("network_type", 18);
+        put("carrier_name", 19);
+        put("log_version", 20);
+        put("ble_key", 21);
+        put("app_version", 22);
+        put("store_name", 23);
+        put("source", 24);
+        put("medium", 25);
+        put("term", 26);
+        put("campaign", 27);
+        put("previous_page", 28);
+        put("action_id", 29);
+        put("current_page", 30);
         put("_$body", 31);
     }};
-    private static final ArrayList<String> ssEncryptionField = new ArrayList<String>(){{
+    private static final ArrayList<String> ssEncryptionField = new ArrayList<String>() {{
         add("mdn");
         add("device_id");
     }};
@@ -151,7 +151,7 @@ public class RakeAPI {
 
             // for non-sentinel user
             // check super properties
-            if(propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")){
+            if (propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")) {
                 properties.put("sentinel_meta", propertiesObj.get("sentinel_meta"));
                 propertiesObj.remove("sentinel_meta");
             }
@@ -207,7 +207,7 @@ public class RakeAPI {
 
                 // add dummy encryptionFields
                 dataObj.put("_$encryptionFields", new JSONArray());
-            }else{
+            } else {
                 // no shuttle
             }
 
@@ -230,9 +230,9 @@ public class RakeAPI {
 
                     else if (fieldOrder != null) {
                         if (fieldOrder.has(key)) {
-                            if(propertiesObj.has(key) && properties.get(key).toString().length()==0){
+                            if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
                                 // do not overwrite with empty string
-                            }else {
+                            } else {
                                 propertiesObj.put(key, properties.get(key));
                             }
                         } else {
@@ -261,8 +261,8 @@ public class RakeAPI {
                         } else {
                             addToProperties = false;
                         }
-                    }else if(defaultValueBlackList.contains(key)){
-                            addToProperties = false;
+                    } else if (defaultValueBlackList.contains(key)) {
+                        addToProperties = false;
                     }
 
                     if (addToProperties) {
@@ -285,7 +285,7 @@ public class RakeAPI {
             mMessages.eventsMessage(dataObj);
 
 
-            if(isDevServer){
+            if (isDevServer) {
                 flush();
             }
         } catch (JSONException e) {
