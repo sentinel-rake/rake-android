@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.8";
+    public static final String VERSION = "r0.5.0_c0.3.9";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -45,7 +45,7 @@ public class RakeAPI {
     private JSONObject mSuperProperties;
 
     // Device Info - black list
-    private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>(){{
+    private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>() {{
         add("mdn");
     }};
 
@@ -108,7 +108,7 @@ public class RakeAPI {
 
             // for non-sentinel user
             // check super properties
-            if(propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")){
+            if (propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")) {
                 properties.put("sentinel_meta", propertiesObj.get("sentinel_meta"));
                 propertiesObj.remove("sentinel_meta");
             }
@@ -154,42 +154,40 @@ public class RakeAPI {
 
                 // add dummy encryptionFields
                 dataObj.put("_$encryptionFields", new JSONArray());
-            }else{
+            } else {
                 // no shuttle
             }
 
 
             // 2-2. custom properties
-            JSONObject body = new JSONObject();
+
             if (properties != null) {
                 for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
                     String key = (String) iter.next();
-
-                    // <-- old shuttle - legacy
                     if (key.compareTo("body") == 0) {
                         // old shuttle
+                        JSONObject body = new JSONObject();
                         for (Iterator<?> bodyIter = properties.getJSONObject(key).keys(); bodyIter.hasNext(); ) {
                             String bodyKey = (String) bodyIter.next();
                             body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
                         }
-                    }
-                    // old shuttle - legacy -->
-
-                    else if (fieldOrder != null) {
+                        propertiesObj.put("_$body", body);
+                    }else if (fieldOrder != null) {
+                        // new shuttle
                         if (fieldOrder.has(key)) {
-                            if(propertiesObj.has(key) && properties.get(key).toString().length()==0){
+                            if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
                                 // do not overwrite with empty string
-                            }else {
+                            } else {
                                 propertiesObj.put(key, properties.get(key));
                             }
                         } else {
-                            body.put(key, properties.get(key));
+//                            body.put(key, properties.get(key));
                         }
                     } else {
+                        // no shuttle
                         propertiesObj.put(key, properties.get(key));
                     }
                 }
-                propertiesObj.put("_$body", body);
             }
 
 
@@ -207,8 +205,8 @@ public class RakeAPI {
                         } else {
                             addToProperties = false;
                         }
-                    }else if(defaultValueBlackList.contains(key)){
-                            addToProperties = false;
+                    } else if (defaultValueBlackList.contains(key)) {
+                        addToProperties = false;
                     }
 
                     if (addToProperties) {
@@ -228,10 +226,12 @@ public class RakeAPI {
             // 4. put properties
             dataObj.put("properties", propertiesObj);
 
+            Log.d("final log",dataObj.toString());
+
             mMessages.eventsMessage(dataObj);
 
 
-            if(isDevServer){
+            if (isDevServer) {
                 flush();
             }
         } catch (JSONException e) {
