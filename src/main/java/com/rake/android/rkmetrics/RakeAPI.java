@@ -226,8 +226,6 @@ public class RakeAPI {
             // 4. put properties
             dataObj.put("properties", propertiesObj);
 
-            Log.d("final log",dataObj.toString());
-
             mMessages.eventsMessage(dataObj);
 
 
