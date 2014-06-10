@@ -85,8 +85,8 @@ public class RakeAPI {
         put("_$body", 31);
     }};
     private static final ArrayList<String> ssEncryptionField = new ArrayList<String>() {{
-        add("mdn");
-        add("device_id");
+//        add("mdn");
+//        add("device_id");
     }};
 
 
