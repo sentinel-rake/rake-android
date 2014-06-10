@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.9";
+    public static final String VERSION = "r0.5.0_c0.3.10";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -358,17 +358,18 @@ public class RakeAPI {
 
 
         // MDN
-        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-        if (res == PackageManager.PERMISSION_GRANTED) {
-            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String mdn = tMgr.getLine1Number();
-            if (mdn == null) {
-                mdn = "";
-            }
-            ret.put("mdn", mdn);
-        } else {
-            ret.put("mdn", "NO PERMISSION");
-        }
+        ret.put("mdn", "");
+//        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
+//        if (res == PackageManager.PERMISSION_GRANTED) {
+//            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+//            String mdn = tMgr.getLine1Number();
+//            if (mdn == null) {
+//                mdn = "";
+//            }
+//            ret.put("mdn", mdn);
+//        } else {
+//            ret.put("mdn", "NO PERMISSION");
+//        }
 
         return ret;
     }
