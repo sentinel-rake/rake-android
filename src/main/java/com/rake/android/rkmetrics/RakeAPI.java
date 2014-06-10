@@ -2,9 +2,7 @@ package com.rake.android.rkmetrics;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import org.json.JSONArray;
@@ -390,7 +388,7 @@ public class RakeAPI {
         ret.put("os_version", Build.VERSION.RELEASE == null ? "UNKNOWN" : Build.VERSION.RELEASE);
         ret.put("manufacturer", Build.MANUFACTURER == null ? "UNKNOWN" : Build.MANUFACTURER);
         ret.put("device_model", Build.MODEL == null ? "UNKNOWN" : Build.MODEL);
-        ret.put("device_id", mSystemInformation.getDeviceId());
+        ret.put("device_id", "");
 
         DisplayMetrics displayMetrics = mSystemInformation.getDisplayMetrics();
         int displayWidth = displayMetrics.widthPixels;
@@ -412,20 +410,7 @@ public class RakeAPI {
 
         ret.put("language_code", mContext.getResources().getConfiguration().locale.getCountry());
 
-
-        // MDN
-        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-        if (res == PackageManager.PERMISSION_GRANTED) {
-            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String mdn = tMgr.getLine1Number();
-            if (mdn == null) {
-                mdn = "";
-            }
-            ret.put("mdn", mdn);
-        } else {
-            ret.put("mdn", "NO PERMISSION");
-        }
-
+        ret.put("mdn", "");
         return ret;
     }
 

@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     compile 'org.json:json:20140107'
-    compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-19/android.jar')
+    compile files('/Applications/Android Studio.app/sdk/platforms/android-19/android.jar')
 }
 
 jar {

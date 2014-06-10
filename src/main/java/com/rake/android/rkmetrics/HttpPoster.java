@@ -19,13 +19,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.client.ClientProtocolException;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.StringEntity;
+
 import org.apache.http.impl.client.DefaultHttpClient;
 
 
@@ -41,12 +41,8 @@ import org.apache.http.params.HttpParams;
 
 import android.util.Log;
 
-
 import com.rake.android.util.Base64Coder;
 import com.rake.android.util.StringUtils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class HttpPoster {
 
