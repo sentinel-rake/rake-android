@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 buildDir = 'build'
-version = '0.3.9'
+version = '0.3.10'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     compile 'org.json:json:20140107'
-    compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20130522/sdk/platforms/android-19/android.jar')
+    compile files('/Applications/Android Studio.app/sdk/platforms/android-19/android.jar')
 }
 
 jar {
