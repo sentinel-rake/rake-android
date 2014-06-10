@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.8";
+    public static final String VERSION = "r0.5.0_c0.3.10";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
