@@ -187,7 +187,6 @@ import android.util.Log;
                 super();
                 mDbAdapter = makeDbAdapter(mContext);
                 mDbAdapter.cleanupEvents(System.currentTimeMillis() - RakeConfig.DATA_EXPIRATION, RakeDbAdapter.Table.EVENTS);
-                mDbAdapter.cleanupEvents(System.currentTimeMillis() - RakeConfig.DATA_EXPIRATION, RakeDbAdapter.Table.PEOPLE);
             }
 
             @Override
@@ -259,8 +258,7 @@ import android.util.Log;
             private void sendAllData() {
                 logAboutMessageToRake("Sending records to Rake");
 
-                sendData(RakeDbAdapter.Table.EVENTS, "/track?ip=1");
-                sendData(RakeDbAdapter.Table.PEOPLE, "/engage");
+                sendData(RakeDbAdapter.Table.EVENTS, "/track");
             }
 
             private void sendData(RakeDbAdapter.Table table, String endpointUrl) {
@@ -269,12 +267,12 @@ import android.util.Log;
                 if (eventsData != null) {
                     String lastId = eventsData[0];
                     String rawMessage = eventsData[1];
+
                     HttpPoster poster = getPoster(mEndpointHost);
                     HttpPoster.PostResult eventsPosted = poster.postData(rawMessage, endpointUrl);
 
                     if (eventsPosted == HttpPoster.PostResult.SUCCEEDED) {
                         logAboutMessageToRake("Posted to " + endpointUrl);
-                        logAboutMessageToRake("Sent Message\n" + rawMessage);
                         mDbAdapter.cleanupEvents(lastId, table);
                     } else if (eventsPosted == HttpPoster.PostResult.FAILED_RECOVERABLE) {
                         // Try again later
