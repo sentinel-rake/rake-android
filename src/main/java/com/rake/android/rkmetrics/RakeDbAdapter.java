@@ -24,8 +24,8 @@ class RakeDbAdapter {
     private static final String LOGTAG = "RakeAPI";
 
     public enum Table {
-        EVENTS("events"),
-        PEOPLE("people");
+        EVENTS("events");
+//        PEOPLE("people");
 
         Table(String name) {
             mTableName = name;
@@ -48,16 +48,16 @@ class RakeDbAdapter {
             "CREATE TABLE " + Table.EVENTS.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     KEY_DATA + " STRING NOT NULL, " +
                     KEY_CREATED_AT + " INTEGER NOT NULL);";
-    private static final String CREATE_PEOPLE_TABLE =
-            "CREATE TABLE " + Table.PEOPLE.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    KEY_DATA + " STRING NOT NULL, " +
-                    KEY_CREATED_AT + " INTEGER NOT NULL);";
+//    private static final String CREATE_PEOPLE_TABLE =
+//            "CREATE TABLE " + Table.PEOPLE.getName() + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                    KEY_DATA + " STRING NOT NULL, " +
+//                    KEY_CREATED_AT + " INTEGER NOT NULL);";
     private static final String EVENTS_TIME_INDEX =
             "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.EVENTS.getName() +
                     " (" + KEY_CREATED_AT + ");";
-    private static final String PEOPLE_TIME_INDEX =
-            "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.PEOPLE.getName() +
-                    " (" + KEY_CREATED_AT + ");";
+//    private static final String PEOPLE_TIME_INDEX =
+//            "CREATE INDEX IF NOT EXISTS time_idx ON " + Table.PEOPLE.getName() +
+//                    " (" + KEY_CREATED_AT + ");";
 
     private final MPDatabaseHelper mDb;
 
@@ -80,9 +80,9 @@ class RakeDbAdapter {
             if (RakeConfig.DEBUG) Log.d(LOGTAG, "Creating a new Rake events DB");
 
             db.execSQL(CREATE_EVENTS_TABLE);
-            db.execSQL(CREATE_PEOPLE_TABLE);
+//            db.execSQL(CREATE_PEOPLE_TABLE);
             db.execSQL(EVENTS_TIME_INDEX);
-            db.execSQL(PEOPLE_TIME_INDEX);
+//            db.execSQL(PEOPLE_TIME_INDEX);
         }
 
         @Override
@@ -90,11 +90,11 @@ class RakeDbAdapter {
             if (RakeConfig.DEBUG) Log.d(LOGTAG, "Upgrading app, replacing Rake events DB");
 
             db.execSQL("DROP TABLE IF EXISTS " + Table.EVENTS.getName());
-            db.execSQL("DROP TABLE IF EXISTS " + Table.PEOPLE.getName());
+//            db.execSQL("DROP TABLE IF EXISTS " + Table.PEOPLE.getName());
             db.execSQL(CREATE_EVENTS_TABLE);
-            db.execSQL(CREATE_PEOPLE_TABLE);
+//            db.execSQL(CREATE_PEOPLE_TABLE);
             db.execSQL(EVENTS_TIME_INDEX);
-            db.execSQL(PEOPLE_TIME_INDEX);
+//            db.execSQL(PEOPLE_TIME_INDEX);
         }
 
         private final File mDatabaseFile;

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import org.json.JSONArray;
@@ -16,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.10";
+    public static final String VERSION = "r0.5.0_c0.3.11";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -237,7 +238,7 @@ public class RakeAPI {
         }
     }
 
-    private void setRakeServer(Context context, String server) {
+    public void setRakeServer(Context context, String server) {
 
         AnalyticsMessages msgs = AnalyticsMessages.getInstance(context);
         msgs.setEndpointHost(server);

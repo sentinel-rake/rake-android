@@ -1,52 +1,35 @@
 package com.rake.android.rkmetrics;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
-
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.http.client.ClientProtocolException;
+import android.util.Log;
+import com.rake.android.util.Base64Coder;
+import com.rake.android.util.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
-import android.util.Log;
-
-
-import com.rake.android.util.Base64Coder;
-import com.rake.android.util.StringUtils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HttpPoster {
 
@@ -80,52 +63,6 @@ public class HttpPoster {
         return ret;
     }
 
-//    public PostResult postHttpValidationRequest(String log, String schemaId, String ssToken, String endpointPath) {
-//
-//        String defaultUrl = mDefaultHost + endpointPath;
-//
-//        PostResult ret = PostResult.FAILED_UNRECOVERABLE;
-//
-//        HttpParams params = setParamsTimeout();
-//        HttpClient httpclient = new DefaultHttpClient(params);
-//
-//
-//        HttpPost httppost = new HttpPost(defaultUrl);
-//        httppost.setHeader("Accept", "application/json");
-//        httppost.setHeader("Accept-Encoding", "gzip");
-//        httppost.setHeader("Content-type", "application/json");
-//
-//        JSONObject valObj = new JSONObject();
-//
-//        try {
-//            valObj.put("log", log);
-//            valObj.put("_$schemaId", schemaId);
-//            valObj.put("_$ssToken", ssToken);
-//
-//            StringEntity se = new StringEntity(valObj.toString());
-//            httppost.setEntity(se);
-//
-//            HttpResponse response = httpclient.execute(httppost);
-//            HttpEntity entity = response.getEntity();
-//
-//            if (entity != null) {
-//                String result = StringUtils.inputStreamToString(entity.getContent());
-//                ret = PostResult.SUCCEEDED;
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        } catch (ClientProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch(Exception e){
-//            e.printStackTrace();
-//        }
-//        return ret;
-//    }
-
 
     public HttpParams setParamsTimeout() {
         HttpParams httpParameters = new BasicHttpParams();
@@ -149,6 +86,7 @@ public class HttpPoster {
 
         HttpPost httppost = new HttpPost(endpointUrl);
         httppost.setHeader("Accept-Encoding", "gzip");
+        httppost.setHeader("Content-Encoding", "gzip");
 
         try {
 
