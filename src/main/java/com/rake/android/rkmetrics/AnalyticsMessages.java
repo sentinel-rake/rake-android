@@ -268,6 +268,8 @@ import android.util.Log;
                     String lastId = eventsData[0];
                     String rawMessage = eventsData[1];
 
+                    // check rawMessageLength
+
                     HttpPoster poster = getPoster(mEndpointHost);
                     HttpPoster.PostResult eventsPosted = poster.postData(rawMessage, endpointUrl);
 
