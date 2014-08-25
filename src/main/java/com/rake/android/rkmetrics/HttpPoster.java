@@ -41,7 +41,9 @@ public class HttpPoster {
         SUCCEEDED,
         FAILED_RECOVERABLE,
         FAILED_UNRECOVERABLE
-    };
+    }
+
+    ;
 
     public HttpPoster(String defaultHost) {
         mDefaultHost = defaultHost;

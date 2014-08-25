@@ -2,10 +2,7 @@ package com.rake.android.rkmetrics;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import org.json.JSONArray;
@@ -173,7 +170,7 @@ public class RakeAPI {
                             body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
                         }
                         propertiesObj.put("_$body", body);
-                    }else if (fieldOrder != null) {
+                    } else if (fieldOrder != null) {
                         // new shuttle
                         if (fieldOrder.has(key)) {
                             if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
