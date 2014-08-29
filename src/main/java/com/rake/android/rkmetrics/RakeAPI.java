@@ -2,10 +2,7 @@ package com.rake.android.rkmetrics;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import org.json.JSONArray;
@@ -17,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.11";
+    public static final String VERSION = "r0.5.0_c0.3.12";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -96,15 +93,17 @@ public class RakeAPI {
 
     public void track(JSONObject properties) {
         Date now = new Date();
-        try {
 
+        try {
             JSONObject dataObj = new JSONObject();
             JSONObject propertiesObj = new JSONObject();
 
             // 1. super properties
-            for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
-                String key = (String) iter.next();
-                propertiesObj.put(key, mSuperProperties.get(key));
+            synchronized (mSuperProperties) {
+                for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
+                    String key = (String) iter.next();
+                    propertiesObj.put(key, mSuperProperties.get(key));
+                }
             }
 
             // for non-sentinel user
@@ -173,7 +172,7 @@ public class RakeAPI {
                             body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
                         }
                         propertiesObj.put("_$body", body);
-                    }else if (fieldOrder != null) {
+                    } else if (fieldOrder != null) {
                         // new shuttle
                         if (fieldOrder.has(key)) {
                             if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
@@ -227,8 +226,9 @@ public class RakeAPI {
             // 4. put properties
             dataObj.put("properties", propertiesObj);
 
-            mMessages.eventsMessage(dataObj);
-
+            synchronized (mMessages) {
+                mMessages.eventsMessage(dataObj);
+            }
 
             if (isDevServer) {
                 flush();
@@ -252,22 +252,26 @@ public class RakeAPI {
 
 
     public void flush() {
-        if (RakeConfig.DEBUG)
+        if (RakeConfig.DEBUG) {
             Log.d(LOGTAG, "flushEvents");
-
-
-        mMessages.postToServer();
+        }
+        synchronized (mMessages) {
+            mMessages.postToServer();
+        }
     }
 
 
     public void registerSuperProperties(JSONObject superProperties) {
-        if (RakeConfig.DEBUG)
+        if (RakeConfig.DEBUG) {
             Log.d(LOGTAG, "registerSuperProperties");
+        }
 
         for (Iterator<?> iter = superProperties.keys(); iter.hasNext(); ) {
             String key = (String) iter.next();
             try {
-                mSuperProperties.put(key, superProperties.get(key));
+                synchronized (mSuperProperties) {
+                    mSuperProperties.put(key, superProperties.get(key));
+                }
             } catch (JSONException e) {
                 Log.e(LOGTAG, "Exception registering super property.", e);
             }
@@ -277,52 +281,41 @@ public class RakeAPI {
     }
 
     public void unregisterSuperProperty(String superPropertyName) {
-        mSuperProperties.remove(superPropertyName);
+        synchronized (mSuperProperties) {
+            mSuperProperties.remove(superPropertyName);
+        }
 
         storeSuperProperties();
     }
 
 
     public void registerSuperPropertiesOnce(JSONObject superProperties) {
-        if (RakeConfig.DEBUG)
+        if (RakeConfig.DEBUG) {
             Log.d(LOGTAG, "registerSuperPropertiesOnce");
+        }
 
         for (Iterator<?> iter = superProperties.keys(); iter.hasNext(); ) {
             String key = (String) iter.next();
-            if (!mSuperProperties.has(key)) {
-                try {
-                    mSuperProperties.put(key, superProperties.get(key));
-                } catch (JSONException e) {
-                    Log.e(LOGTAG, "Exception registering super property.", e);
+            synchronized (mSuperProperties) {
+                if (!mSuperProperties.has(key)) {
+                    try {
+                        mSuperProperties.put(key, superProperties.get(key));
+                    } catch (JSONException e) {
+                        Log.e(LOGTAG, "Exception registering super property.", e);
+                    }
                 }
             }
-        }// for
+        }
 
         storeSuperProperties();
     }
 
-    public void clearSuperProperties() {
-        if (RakeConfig.DEBUG)
+    public synchronized void clearSuperProperties() {
+        if (RakeConfig.DEBUG) {
             Log.d(LOGTAG, "clearSuperProperties");
+        }
         mSuperProperties = new JSONObject();
     }
-
-
-    // Package-level access. Used (at least) by GCMReceiver
-    // when OS-level events occur.
-//    interface InstanceProcessor {
-//        public void process(RakeAPI m);
-//    }
-//
-//    static void allInstances(InstanceProcessor processor) {
-//        synchronized (sInstanceMap) {
-//            for (Map<Context, RakeAPI> contextInstances : sInstanceMap.values()) {
-//                for (RakeAPI instance : contextInstances.values()) {
-//                    processor.process(instance);
-//                }
-//            }
-//        }
-//    }
 
 
     private JSONObject getDefaultEventProperties() throws JSONException {
@@ -360,17 +353,19 @@ public class RakeAPI {
 
         // MDN
         ret.put("mdn", "");
-//        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-//        if (res == PackageManager.PERMISSION_GRANTED) {
-//            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-//            String mdn = tMgr.getLine1Number();
-//            if (mdn == null) {
-//                mdn = "";
-//            }
-//            ret.put("mdn", mdn);
-//        } else {
-//            ret.put("mdn", "NO PERMISSION");
-//        }
+        /*
+        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
+        if (res == PackageManager.PERMISSION_GRANTED) {
+            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            String mdn = tMgr.getLine1Number();
+            if (mdn == null) {
+                mdn = "";
+            }
+            ret.put("mdn", mdn);
+        } else {
+            ret.put("mdn", "NO PERMISSION");
+        }
+        */
 
         return ret;
     }
@@ -378,8 +373,9 @@ public class RakeAPI {
 
     private void readSuperProperties() {
         String props = mStoredPreferences.getString("super_properties", "{}");
-        if (RakeConfig.DEBUG)
+        if (RakeConfig.DEBUG) {
             Log.d(LOGTAG, "Loading Super Properties " + props);
+        }
 
         try {
             mSuperProperties = new JSONObject(props);
@@ -397,7 +393,7 @@ public class RakeAPI {
             Log.d(LOGTAG, "Storing Super Properties " + props);
         SharedPreferences.Editor prefsEditor = mStoredPreferences.edit();
         prefsEditor.putString("super_properties", props);
-        prefsEditor.commit();
+        prefsEditor.commit();   // synchronous
     }
 
 
