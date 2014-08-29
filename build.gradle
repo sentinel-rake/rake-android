@@ -1,10 +1,14 @@
 apply plugin: 'java'
+apply plugin: 'maven'
 
 buildDir = 'build'
-version = '0.3.11'
+version = '0.3.12'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
+
+archivesBaseName = 'rake-android'
+group = 'com.skplanet.pdp.rake'
 
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
@@ -15,6 +19,9 @@ tasks.withType(Compile) {
 
 repositories {
     mavenCentral()
+    maven {
+        url "http://mvn.skplanet.com/content/groups/public/"
+    }
     flatDir {
         dirs 'libs'
     }
@@ -24,6 +31,7 @@ repositories {
 dependencies {
     compile 'org.json:json:20140107'
     compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20140624/sdk/platforms/android-19/android.jar')
+    testCompile 'junit:junit:4.11'
 }
 
 jar {
@@ -31,3 +39,14 @@ jar {
         attributes("Implementation-Title": "Rake", "Implementation-Version": version)
     }
 }
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: 'http://mvn.skplanet.com/content/repositories/releases')
+            snapshotRepository(url: 'http://mvn.skplanet.com/content/repositories/snapshots')
+        }
+    }
+}
+
+
