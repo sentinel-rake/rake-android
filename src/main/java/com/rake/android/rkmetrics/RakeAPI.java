@@ -44,7 +44,7 @@ public class RakeAPI {
 
     // Device Info - black list
     private final static ArrayList<String> defaultValueBlackList = new ArrayList<String>() {{
-        add("mdn");
+//        add("mdn");
     }};
 
     private RakeAPI(Context context, String token) {
@@ -349,23 +349,6 @@ public class RakeAPI {
         ret.put("network_type", isWifi == null ? "UNKNOWN" : isWifi.booleanValue() == true ? "WIFI" : "NOT WIFI");
 
         ret.put("language_code", mContext.getResources().getConfiguration().locale.getCountry());
-
-
-        // MDN
-        ret.put("mdn", "");
-        /*
-        int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-        if (res == PackageManager.PERMISSION_GRANTED) {
-            TelephonyManager tMgr = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String mdn = tMgr.getLine1Number();
-            if (mdn == null) {
-                mdn = "";
-            }
-            ret.put("mdn", mdn);
-        } else {
-            ret.put("mdn", "NO PERMISSION");
-        }
-        */
 
         return ret;
     }
