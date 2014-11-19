@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 buildDir = 'build'
-version = '0.3.13'
+version = '0.3.14'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     compile 'org.json:json:20140107'
-    compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20140624/sdk/platforms/android-19/android.jar')
+    compile files('/Users/skplanet/Apps/adt-bundle-mac-x86_64-20140702/sdk/platforms/android-19/android.jar')
     testCompile 'junit:junit:4.11'
 }
 
