@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RakeAPI {
-    public static final String VERSION = "r0.5.0_c0.3.13";
+    public static final String VERSION = "r0.5.0_c0.3.14";
     private boolean isDevServer = false;
 
     private static final String LOGTAG = "RakeAPI";
@@ -100,106 +99,58 @@ public class RakeAPI {
 
             // 1. super properties
             synchronized (mSuperProperties) {
-                for (Iterator<?> iter = mSuperProperties.keys(); iter.hasNext(); ) {
-                    String key = (String) iter.next();
+                for (Iterator<?> keys = mSuperProperties.keys(); keys.hasNext(); ) {
+                    String key = (String) keys.next();
                     propertiesObj.put(key, mSuperProperties.get(key));
                 }
             }
 
-            // for non-sentinel user
-            // check super properties
-            if (propertiesObj.has("sentinel_meta") && !properties.has("sentinel_meta")) {
-                properties.put("sentinel_meta", propertiesObj.get("sentinel_meta"));
-                propertiesObj.remove("sentinel_meta");
-            }
-
-            // 2-1. sentinel(schema) meta data
             JSONObject sentinel_meta;
-            String schemaId = null;
-            JSONObject fieldOrder = null;
-            JSONArray encryptionFields = null;
-
             if (properties.has("sentinel_meta")) {
-                // new shuttle
                 sentinel_meta = properties.getJSONObject("sentinel_meta");
-
-                schemaId = (String) sentinel_meta.get("_$schemaId");
-                fieldOrder = sentinel_meta.getJSONObject("_$fieldOrder");
-
-                encryptionFields = sentinel_meta.getJSONArray("_$encryptionFields");
-
-                properties.remove("sentinel_meta");
-                dataObj.put("_$schemaId", schemaId);
-                dataObj.put("_$fieldOrder", fieldOrder);
-                dataObj.put("_$encryptionFields", encryptionFields);
-            } else if (properties.has("_$ssSchemaId")) {
-                // old shuttle
-                dataObj.put("_$schemaId", properties.get("_$ssSchemaId"));
-                properties.remove("_$ssSchemaId");
-
-                // convert schemaOrder -> fieldOrder
-                JSONArray schemaOrder = properties.getJSONArray("_$ssSchemaOrder");
-                fieldOrder = new JSONObject();
-                int i = 0;
-                for (i = 0; i < schemaOrder.length(); i++) {
-                    String fieldName = schemaOrder.getString(i);
-                    fieldOrder.put(fieldName, i);
+                for (Iterator<?> sentinel_meta_keys = sentinel_meta.keys(); sentinel_meta_keys.hasNext(); ) {
+                    String sentinel_meta_key = (String) sentinel_meta_keys.next();
+                    dataObj.put(sentinel_meta_key, sentinel_meta.get(sentinel_meta_key));
                 }
-                fieldOrder.put("_$body", i);
-                dataObj.put("_$fieldOrder", fieldOrder);
-                properties.remove("_$ssSchemaOrder");
-
-                // remove useless token
-                properties.remove("_$ssToken");
-
-                // add dummy encryptionFields
-                dataObj.put("_$encryptionFields", new JSONArray());
+                properties.remove("sentinel_meta");
             } else {
-                // no shuttle
+                // no sentinel shuttle
+                // need to do something here?
+                // get/make sentinel_meta for this project
             }
 
+            JSONObject fieldOrder;
+            try {
+                fieldOrder = (JSONObject) dataObj.get("_$fieldOrder");
+            } catch (JSONException e) {
+                fieldOrder = null;
+            }
 
             // 2-2. custom properties
-
             if (properties != null) {
-                for (Iterator<?> iter = properties.keys(); iter.hasNext(); ) {
-                    String key = (String) iter.next();
-                    if (key.compareTo("body") == 0) {
-                        // old shuttle
-                        JSONObject body = new JSONObject();
-                        for (Iterator<?> bodyIter = properties.getJSONObject(key).keys(); bodyIter.hasNext(); ) {
-                            String bodyKey = (String) bodyIter.next();
-                            body.put(bodyKey, properties.getJSONObject(key).get(bodyKey));
-                        }
-                        propertiesObj.put("_$body", body);
-                    } else if (fieldOrder != null) {
-                        // new shuttle
-                        if (fieldOrder.has(key)) {
-                            if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
-                                // do not overwrite with empty string
-                            } else {
-                                propertiesObj.put(key, properties.get(key));
-                            }
+                for (Iterator<?> keys = properties.keys(); keys.hasNext(); ) {
+                    String key = (String) keys.next();
+                    if (fieldOrder != null && fieldOrder.has(key)) {    // field defined in schema
+                        if (propertiesObj.has(key) && properties.get(key).toString().length() == 0) {
+                            // Do not overwrite super properties with empty string of properties.
                         } else {
-//                            body.put(key, properties.get(key));
+                            propertiesObj.put(key, properties.get(key));
                         }
-                    } else {
-                        // no shuttle
+                    } else if (fieldOrder == null) { // no fieldOrder (maybe no shuttle)
                         propertiesObj.put(key, properties.get(key));
                     }
                 }
             }
 
-
             // 3. auto : device info
             // get only values in fieldOrder
             JSONObject defaultProperties = getDefaultEventProperties();
             if (defaultProperties != null) {
-                for (Iterator<?> iter = defaultProperties.keys(); iter.hasNext(); ) {
-                    String key = (String) iter.next();
+                for (Iterator<?> keys = defaultProperties.keys(); keys.hasNext(); ) {
+                    String key = (String) keys.next();
                     boolean addToProperties = true;
 
-                    if (schemaId != null) {
+                    if (fieldOrder != null) {
                         if (fieldOrder.has(key)) {
                             addToProperties = true;
                         } else {
