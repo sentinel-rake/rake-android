@@ -101,7 +101,7 @@ import android.util.Log;
 public class MixpanelAPI {
 	public static final String VERSION = "3.3.0.1";
 	public static final String RAKE_VERSION = "0.5.0";
-	public static final String CLIENT_VERSION = "0.1.2";
+	public static final String CLIENT_VERSION = "0.1.4";
 
 	/**
 	 * You shouldn't instantiate MixpanelAPI objects directly. Use
@@ -1212,18 +1212,18 @@ public class MixpanelAPI {
 		
 		// MDN
 //		String permission = "android.permission.READ_PHONE_STATE";
-	    int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
-	    if (res == PackageManager.PERMISSION_GRANTED){	    	
-	    	TelephonyManager tMgr =(TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
-	    	String MDN = tMgr.getLine1Number();
-	    	if(MDN == null){
-	    		MDN = "";
-	    	}
-	    	ret.put("MDN", MDN);
-	    }else{
-	    	ret.put("MDN", "NO PERMISSION");
-	    }
-		
+//	    int res = this.mContext.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE");
+//	    if (res == PackageManager.PERMISSION_GRANTED){	    	
+//	    	TelephonyManager tMgr =(TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
+//	    	String MDN = tMgr.getLine1Number();
+//	    	if(MDN == null){
+//	    		MDN = "";
+//	    	}
+//	    	ret.put("MDN", MDN);
+//	    }else{
+//	    	ret.put("MDN", "NO PERMISSION");
+//	    }
+//		
 		
 		// Location
 //	    res = this.mContext.checkCallingOrSelfPermission("android.permission.ACCESS_FINE_LOCATION");
